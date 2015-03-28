@@ -1,0 +1,17 @@
+{
+  "name": "stricture",
+  "version": "0.0.1",
+  "description": "Stricture MicroDDL JSON Parser",
+  "main": "Stricture.js",
+  "scripts": {
+    "test": "echo \"No tests yet.\" && exit 1",
+    "start": "node Stricture.js"
+  },
+  "author": "Steven Velozo <steven@velozo.com>",
+  "license": "MIT",
+  "devDependencies": {
+    "jsonfile": "^2.0.0",
+    "minimist": "^1.1.0",
+    "yargs": "^2.3.0"
+  }
+}

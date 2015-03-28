@@ -1,0 +1,41 @@
+{
+  "Tables":
+  [
+  {
+    "TableName": "User",
+    "Columns":
+      [
+          { "Column": "IDUser", "DataType": "ID" },
+          { "Column": "UserName", "Size": "64", "DataType": "String" },
+          { "Column": "PasswordHash", "Size": "42", "DataType": "String" },
+          { "Column": "FirstName", "Size": "38", "DataType": "String" },
+          { "Column": "LastName", "Size": "38", "DataType": "String" },
+          { "Column": "Email", "Size": "60", "DataType": "String" }
+      ]
+  },
+  {
+    "TableName": "Contact",
+    "Columns":
+      [
+          { "Column": "IDContact", "DataType": "ID" },
+          { "Column": "CreatingIDUser", "DataType": "Numeric", "Join": "IDUser"},
+          { "Column": "Name", "Size": "90", "DataType": "String" },
+          { "Column": "Email", "Size": "60", "DataType": "String" }
+      ]
+  },
+  {
+    "TableName": "Address",
+    "Columns":
+      [
+          { "Column": "IDAddress", "DataType": "ID" },
+          { "Column": "CreatingIDUser", "DataType": "Numeric", "Join": "IDUser"},
+          { "Column": "IDContact", "DataType": "Numeric", "Join": "IDContact"},
+          { "Column": "Address", "Size": "130", "DataType": "String" },
+          { "Column": "City", "Size": "48", "DataType": "String" },
+          { "Column": "State", "Size": "24", "DataType": "String" },
+          { "Column": "Zip", "Size": "10", "DataType": "String" },
+          { "Column": "Phone", "Size": "12", "DataType": "String" }
+      ]
+  }
+  ]
+}

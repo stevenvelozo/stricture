@@ -1,0 +1,10 @@
+## Table Connection Graph -- Generated 2015-03-28T20:45:35.258Z
+digraph DataModel {
+rankdir=LR
+User;
+Contact;
+Address;
+Contact -> User
+Address -> User
+Address -> Contact
+}
