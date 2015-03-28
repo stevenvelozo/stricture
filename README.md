@@ -115,7 +115,7 @@ The generated JSON in `Examples/SimpleAddress.mddl.json` looks like:
 
 ### Diagrams
 
-You can generate diagrams from this model:
+You can generate diagrams from this model.  Stricture uses the [graphviz tool chain](http://www.graphviz.org/) to generate graphs.  You must have graphviz installed and in your path to generate diagram images.
 
     $ node Stricture -i "./Examples/SimpleAddress.mddl.json" -c RelationshipsFull -g -l
     Stricture JSON DDL Processing Utility
