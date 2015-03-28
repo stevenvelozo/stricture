@@ -1,0 +1,24 @@
+!User
+@IDUser
+$UserName
+$PasswordHash 42
+$FirstName 38
+$LastName 38
+$Email 60
+
+!Contact
+@IDContact
+#CreatingIDUser -> IDUser
+$Name 90
+$Email 60
+
+!Address
+@IDAddress
+#CreatingIDUser -> IDUser
+#IDContact -> IDContact
+$Address 130
+$City 48
+$State 24
+$Zip 10
+$Phone 12
+
