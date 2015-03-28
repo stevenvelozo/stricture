@@ -143,4 +143,14 @@ You can generate diagrams from this model:
 
 Which creates:
 
-![Simple Table Entity Connections](https://github.com/stevenvelozo/stricture/raw/master/Examples/ModelGraph-RelationshipsFull.png)
+![Simple Table Entity Connections](https://github.com/stevenvelozo/stricture/raw/master/Examples/SimpleAddress.png)
+
+
+More Complex Examples
+---------------------
+
+The infamous Northwind database has been converted to MicroDDL as an example.  It isn't 100% generating the Northwind SQL because the DDL spec doesn't cover all features used yet.
+
+You can find it in `Examples/Northwind.mddl` ... the graph for this model is:
+
+![Complex Table Entity Connections](https://github.com/stevenvelozo/stricture/raw/master/Examples/Northwind.png)
