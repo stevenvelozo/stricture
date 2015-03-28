@@ -1,8 +1,0 @@
-## Table Connection Graph -- Generated 2015-03-28T20:44:49.932Z
-digraph DataModel {
-rankdir=LR
-User;
-Contact;
-Address;
-Address -> Contact
-}
