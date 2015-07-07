@@ -11,17 +11,31 @@ echo "Contact: Steven Velozo <steven@velozo.com>"
 echo ""
 echo "---"
 echo ""
-echo "Usage: ./MicroDDL-To-JSON.sh [MicroDDLFile.mddl]"
+echo "Usage: ./MicroDDL-To-JSON.sh [MicroDDLFile.mddl] [OutputFileName (optional)]"
 echo ""
 
 #
+# Create the Build to folder
+mkdir build
+
+#
 # Check if there is a file specified
-if [ ! -n "$1" ]
+if [ "$#" -ne 1 ] && [ "$#" -ne 2 ]
 then
-  echo "ERROR: You must provide a single argument, which is the filename of the MicroDDL file to process."
+  echo "ERROR: You must provide at least a single argument, which is the filename of the MicroDDL file to process."
   echo ""
   exit
 fi
+
+#
+# Setup the filenames
+OutputFileName="build/$1.json"
+echo "--> Reading the following MicroDDL file: "$1
+if [ "$#" -eq 2 ]
+then
+  OutputFileName=$2
+fi
+echo "--> Writing the following JSON file: "$OutputFileName
 
 
 SED="sed"
@@ -77,10 +91,10 @@ cat tmpDDL2.almostjson |$SED '1i {\n  "Tables":\n  [' > tmpDDL1.almostjson
 # Remove extraneous lines
 cat tmpDDL1.almostjson |$SED '/^$/d' > tmpDDL2.almostjson
 # Fix the last entry in the array of tables to not have the extraneous comma
-cat tmpDDL2.almostjson |$SED ':begin;$!N;s/},\n  ]/}\n  ]/;tbegin;P;D' > $1.json
+cat tmpDDL2.almostjson |$SED ':begin;$!N;s/},\n  ]/}\n  ]/;tbegin;P;D' > $OutputFileName
 
 echo "--> Cleaning up..."
 # Now remove the vestiges of this run
 rm *.almostjson
 
-echo "--> Generation complete!  $1.json is ready to work with."
+echo "--> Generation complete!  $OutputFileName is ready to work with."

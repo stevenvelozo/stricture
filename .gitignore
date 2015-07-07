@@ -1,3 +1,6 @@
+# the "build" folder (where Stricture puts stuff that it generates by default)
+build
+
 # Logs
 logs
 *.log

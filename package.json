@@ -1,17 +1,36 @@
 {
   "name": "stricture",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "description": "Stricture MicroDDL JSON Parser",
-  "main": "Stricture.js",
+  "main": "source/Stricture.js",
   "scripts": {
-    "test": "echo \"No tests yet.\" && exit 1",
-    "start": "node Stricture.js"
+    "start": "node source/Stricture.js",
+    "coverage": "./node_modules/istanbul/lib/cli.js cover ./node_modules/mocha/bin/_mocha -- -u tdd -R spec",
+    "test": "./node_modules/mocha/bin/_mocha -u tdd -R spec"
   },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/stevenvelozo/stricture.git"
+  },
+  "keywords": [
+    "logging"
+  ],
   "author": "Steven Velozo <steven@velozo.com>",
   "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/stevenvelozo/stricture/issues"
+  },
   "devDependencies": {
+    "chai": "^3.0.0",
+    "istanbul": "^0.3.17",
+    "mocha": "^2.2.5"
+  },
+  "dependencies": {
+    "async": "^1.3.0",
+    "fable": "^0.1.6",
     "jsonfile": "^2.0.0",
     "minimist": "^1.1.0",
+    "mkdirp": "^0.5.1",
     "yargs": "^2.3.0"
   }
 }

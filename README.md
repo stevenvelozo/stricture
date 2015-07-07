@@ -139,7 +139,6 @@ You can generate diagrams from this model.  Stricture uses the [graphviz tool ch
     dot -Tpng ModelGraph-RelationshipsFull.dot > ModelGraph-RelationshipsFull.png
       > Image generation complete
     --> Loading image ModelGraph-RelationshipsFull.png in your OS.  Hopefully.
-    steven at MathBookPro in /Mutination/stricture on master*
 
 Which creates:
 
@@ -154,3 +153,72 @@ The infamous Northwind database has been converted to MicroDDL as an example.  I
 You can find it in `Examples/Northwind.mddl` ... the graph for this model is:
 
 ![Complex Table Entity Connections](https://github.com/stevenvelozo/stricture/raw/master/Examples/Northwind.png)
+
+
+### MySQL
+
+Generating MySQL Create statements is easy peasy, just run this:
+
+    steven at Stevens-MacBook-Air in /OSS/stricture on master
+    $ node Stricture.js -i ./Examples/Northwind.mddl.json -c MySQL
+    Stricture JSON DDL Processing Utility
+    Contact: Steven Velozo <steven@velozo.com>
+
+    ---
+
+    --> Loading ./Examples/Northwind.mddl.json
+      > file loaded successfully.
+    --> ... creating contextual Index ==> Table lookups ...
+      > Adding the table Categories to the lookup cache with the key CategoryID
+      > Adding the table CustomerDemographics to the lookup cache with the key CustomerTypeID
+      > Adding the table Customers to the lookup cache with the key CustomerID
+      > Adding the table Employees to the lookup cache with the key EmployeeID
+      > Adding the table Orders to the lookup cache with the key OrderID
+      > Adding the table Products to the lookup cache with the key ProductID
+      > Adding the table Region to the lookup cache with the key RegionID
+      > Adding the table Shippers to the lookup cache with the key ShipperID
+      > Adding the table Suppliers to the lookup cache with the key SupplierID
+      > Adding the table Territories to the lookup cache with the key TerritoryID
+
+    --> Running Command: MySQL
+    --> Building the table create file...
+      > Categories
+      > CustomerCustomerDemo
+      > CustomerDemographics
+      > Customers
+      > Employees
+      > EmployeeTerritories
+      > OrderDetails
+      > Orders
+      > Products
+      > Region
+      > Shippers
+      > Suppliers
+      > Territories
+
+Which generates some MySQL create statements in the file 'build/Stricture_Output.mysql.sql' that look like the following:
+
+    --   [ Categories ]
+    CREATE TABLE IF NOT EXISTS
+        Categories
+        (
+            CategoryID INT UNSIGNED NOT NULL AUTO_INCREMENT,
+            CategoryName CHAR(15) NOT NULL DEFAULT '',
+            Description TEXT,
+
+            PRIMARY KEY (CategoryID)
+        );
+
+
+
+    --   [ CustomerCustomerDemo ]
+    CREATE TABLE IF NOT EXISTS
+        CustomerCustomerDemo
+        (
+            CustomerID INT NOT NULL DEFAULT '0',
+            CustomerTypeID INT NOT NULL DEFAULT '0'
+        );
+
+### Meadow Schema Files
+
+    You can also generate meadow schema files!  Just run stricture with the 'Meadow' command. 
