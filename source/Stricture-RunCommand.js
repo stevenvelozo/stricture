@@ -49,6 +49,11 @@ var runCommand = function(pFable)
 			require('./Stricture-Generate-Meadow.js')(pFable);
 			break;
 
+		// Generate Meadow Model Descriptions
+		case 'TestObjectContainers':
+			require('./Stricture-Generate-TestObjectContainers.js')(pFable);
+			break;
+
 		// No command provided, show basic info (a table count and list).
 		default:
 			console.log('--> There are '+pFable.Model.Tables.length+' tables in the DDL (listed below).');
