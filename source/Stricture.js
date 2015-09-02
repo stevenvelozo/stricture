@@ -9,6 +9,7 @@
 */
 
 var libMkdirp = require('mkdirp');
+console = require('better-console');
 
 var Stricture = function(pSettings)
 {
@@ -38,7 +39,7 @@ var Stricture = function(pSettings)
 			else
 			{
 				// Load the JSON, then run the command with the model passed in
-				require('./Stricture-LoadJSON.js')(_Fable, require('./Stricture-RunCommand.js'));
+				require('./Stricture-Run-Prepare.js')(_Fable, require('./Stricture-Run-ExecuteCommand.js'));
 			}
 		}
 	);

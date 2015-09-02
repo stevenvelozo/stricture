@@ -1,0 +1,14 @@
+#!/usr/bin/env node
+/**
+ * Stricture
+ *
+ * Database create statements, documentation, graphs, mock objects
+ * for unit tests and a bunch more.
+ *
+ * See <https://github.com/trentm/node-bunyan>.
+ *
+ * -*- mode: js -*-
+ * vim: expandtab:ts=4:sw=4
+ */
+
+var strictureExecution = require('../Stricture.js');

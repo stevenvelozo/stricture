@@ -25,13 +25,14 @@ var BuildDOTImage = function(pFable)
 
 	pFable.ImageFileName = pFable.settings.OutputLocation+pFable.settings.OutputFileName+'.png';
 
-	console.log('--> Beginning image generation to '+pFable.ImageFileName+'...');
-	console.log('dot -Tpng '+pFable.DotFileName+' > '+pFable.ImageFileName);
+	console.info('--> Beginning image generation to '+pFable.ImageFileName+'...');
+	console.log('  > command: dot -Tpng '+pFable.DotFileName+' > '+pFable.ImageFileName);
 	libChildProcess.exec
 	(
 		'dot -Tpng '+pFable.DotFileName+' > '+pFable.ImageFileName,
 		function(pError, pStdOut, pStdErr)
 		{
+			console.time('>>> Image Generation');
 			if (pStdErr)
 				console.log('ERROR FROM DOT: '+pStdErr);
 			console.log('  > Image generation complete');
@@ -50,6 +51,7 @@ var BuildDOTImage = function(pFable)
 						break;
 				}
 			}
+			console.timeEnd('>>> Image Generation');
 		}
 	);
 };
@@ -62,7 +64,7 @@ var GenerateRelationshipGraph = function(pFable)
 	// If the user passes in true, we will show all connections
 	pFable.DotFileName = pFable.settings.OutputLocation+pFable.settings.OutputFileName+'.dot';
 
-	console.log('--> Building the Relationships graph...');
+	console.info('--> Building the Relationships graph...');
 	// Now build the connected graph
 	console.log('--> ... building the connected graph DOT file ...');
 	// This writes the header text to the file -- overwriting an old file if it's there already...
@@ -101,5 +103,7 @@ var GenerateRelationshipGraph = function(pFable)
 
 	BuildDOTImage(pFable);
 };
+
+console.log('Loaded graph generation file')
 
 module.exports = GenerateRelationshipGraph;
