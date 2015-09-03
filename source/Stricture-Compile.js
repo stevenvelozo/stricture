@@ -239,6 +239,10 @@ var libLineReader = require('line-by-line');
 		function ()
 		{
 			// All lines are read, file is closed now.
+			if (tmpCurrentTable !== false)
+			{
+					libFS.appendFileSync(tmpJSONFile, "\n        ]\n      }");
+			}
 			libFS.appendFileSync(tmpJSONFile, "\n    ]\n}\n");
 			console.log('  > Compilation complete');
 		}
