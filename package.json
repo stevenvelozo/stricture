@@ -1,8 +1,11 @@
 {
   "name": "stricture",
-  "version": "0.0.2",
+  "version": "1.0.0",
   "description": "Stricture MicroDDL JSON Parser",
   "main": "source/Stricture.js",
+  "bin": {
+    "stricture": "./bin/stricture"
+  },
   "scripts": {
     "start": "node source/Stricture.js",
     "coverage": "./node_modules/istanbul/lib/cli.js cover ./node_modules/mocha/bin/_mocha -- -u tdd -R spec",

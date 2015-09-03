@@ -5,6 +5,11 @@ A basic data description language, inspired by Markdown.  Database engine, progr
 
 Why, you ask?  Because it felt wrong allowing some application framework to define the database structure for data models.  This simple spec can quickly spool up a data store in multiple engines, documentation and starting source code for your framework du jour.
 
+Installation
+---
+
+You can install stricture globally and it will create a "stricture" command you can run.  These examples assume you have checked out this repository and are in the repository root folder, and have run npm install.
+
 MicroDDL Key
 ---
 
@@ -55,90 +60,105 @@ This is a Users table, Contact table and Address table.  This file is located in
 
 You can translate the MicroDDL to json by running the `MicroDDL-To-JSON.sh` command:
 
-    $ ./MicroDDL-To-JSON.sh "Examples/SimpleAddress.mddl"
-    MicroDDL to JSON Conversion
+```sh
+$ node Stricture -i Examples/SimpleAddress.mddl -c Compile
+Stricture JSON DDL Processing Utility
+Contact: Steven Velozo <steven@velozo.com>
 
-    License: MIT
-    Contact: Steven Velozo <steven@velozo.com>
+---
 
-    ---
 
-    Usage: ./MicroDDL-To-JSON.sh [MicroDDLFile.mddl]
-
-    --> Removing vestiges of last run...
-    --> Creating json data description...
-    --> Fixing up json...
-    --> Cleaning up...
-    --> Generation complete!  Examples/SimpleAddress.mddl.json is ready to work with.
+--> Running Command: Compile
+--> Compiling MicroDDL to JSON
+  > Input file:  Examples/SimpleAddress.mddl
+  > Output file: ./build/Stricture_Output.json
+  > Line #1 begins table stanza: User
+  > Line #9 begins table stanza: Contact
+  > Line #15 begins table stanza: Address
+  > Compilation complete
+```
 
 The generated JSON in `Examples/SimpleAddress.mddl.json` looks like:
-
-    {
-      "Tables":
-      [
+```json
+{
+  "Tables":
+    [
       {
         "TableName": "User",
         "Columns":
-          [
-              { "Column": "IDUser", "DataType": "ID" },
-              { "Column": "UserName", "Size": "64", "DataType": "String" },
-              { "Column": "PasswordHash", "Size": "42", "DataType": "String" },
-              { "Column": "FirstName", "Size": "38", "DataType": "String" },
-              { "Column": "LastName", "Size": "38", "DataType": "String" },
-              { "Column": "Email", "Size": "60", "DataType": "String" }
-          ]
+        [
+          {"Column":"IDUser","DataType":"ID"},
+          {"Column":"UserName","DataType":"String","Size":"64"},
+          {"Column":"PasswordHash","DataType":"String","Size":"42"},
+          {"Column":"FirstName","DataType":"String","Size":"38"},
+          {"Column":"LastName","DataType":"String","Size":"38"},
+          {"Column":"Email","DataType":"String","Size":"60"}
+        ]
       },
       {
         "TableName": "Contact",
         "Columns":
-          [
-              { "Column": "IDContact", "DataType": "ID" },
-              { "Column": "CreatingIDUser", "DataType": "Numeric", "Join": "IDUser"},
-              { "Column": "Name", "Size": "90", "DataType": "String" },
-              { "Column": "Email", "Size": "60", "DataType": "String" }
-          ]
+        [
+          {"Column":"IDContact","DataType":"ID"},
+          {"Column":"CreatingIDUser","DataType":"Numeric","Join":"IDUser"},
+          {"Column":"Name","DataType":"String","Size":"90"},
+          {"Column":"Email","DataType":"String","Size":"60"}
+        ]
       },
       {
         "TableName": "Address",
         "Columns":
-          [
-              { "Column": "IDAddress", "DataType": "ID" },
-              { "Column": "CreatingIDUser", "DataType": "Numeric", "Join": "IDUser"},
-              { "Column": "IDContact", "DataType": "Numeric", "Join": "IDContact"},
-              { "Column": "Address", "Size": "130", "DataType": "String" },
-              { "Column": "City", "Size": "48", "DataType": "String" },
-              { "Column": "State", "Size": "24", "DataType": "String" },
-              { "Column": "Zip", "Size": "10", "DataType": "String" },
-              { "Column": "Phone", "Size": "12", "DataType": "String" }
-      ]
-    }
+        [
+          {"Column":"IDAddress","DataType":"ID"},
+          {"Column":"CreatingIDUser","DataType":"Numeric","Join":"IDUser"},
+          {"Column":"IDContact","DataType":"Numeric","Join":"IDContact"},
+          {"Column":"Address","DataType":"String","Size":"130"},
+          {"Column":"City","DataType":"String","Size":"48"},
+          {"Column":"State","DataType":"String","Size":"24"},
+          {"Column":"Zip","DataType":"String","Size":"10"},
+          {"Column":"Phone","DataType":"String","Size":"12"}
+        ]
+      }
+    ]
+}
+```
 
 ### Diagrams
 
 You can generate diagrams from this model.  Stricture uses the [graphviz tool chain](http://www.graphviz.org/) to generate graphs.  You must have graphviz installed and in your path to generate diagram images.
 
-    $ node Stricture -i "./Examples/SimpleAddress.mddl.json" -c RelationshipsFull -g -l
-    Stricture JSON DDL Processing Utility
-    Contact: Steven Velozo <steven@velozo.com>
+```sh
+$ node Stricture -i "./build/Stricture_Output.json" -c RelationshipsFull -g -l
+Stricture JSON DDL Processing Utility
+Contact: Steven Velozo <steven@velozo.com>
 
-    ---
+---
 
-    --> ./Examples/SimpleAddress.mddl.json loaded successfully.
-    --> Building the Relationships graph...
-    --> ... creating contextual Index ==> Table lookups ...
-      > Adding the table User to the lookup cache with the key IDUser
-      > Adding the table Contact to the lookup cache with the key IDContact
-      > Adding the table Address to the lookup cache with the key IDAddress
-    --> ... building the connected graph DOT file ...
-      > Header
-      > Table Nodes
-      > Connections
-      > Closing
-    --> DOT generation complete!
-    --> Beginning image generation to ModelGraph-RelationshipsFull.png...
-    dot -Tpng ModelGraph-RelationshipsFull.dot > ModelGraph-RelationshipsFull.png
-      > Image generation complete
-    --> Loading image ModelGraph-RelationshipsFull.png in your OS.  Hopefully.
+
+--> Running Command: RelationshipsFull
+Loaded graph generation file
+--> Loading ./build/Stricture_Output.json
+  > file loaded successfully.
+--> ... creating contextual Index ==> Table lookups ...
+  > Adding the table User to the lookup cache with the key IDUser
+  > Adding the table Contact to the lookup cache with the key IDContact
+  > Adding the table Address to the lookup cache with the key IDAddress
+  > indices built successfully.
+  > executing script: function
+--> Building the Relationships graph...
+--> ... building the connected graph DOT file ...
+  > Header
+  > Table Nodes
+  > Connections
+  > Closing
+--> DOT generation complete!
+--> Beginning image generation to ./build/Stricture_Output.png...
+  > command: dot -Tpng ./build/Stricture_Output.dot > ./build/Stricture_Output.png
+Stricture Command Execution: 12ms
+  > Image generation complete
+--> Loading image ./build/Stricture_Output.png in your OS.  Hopefully.
+>>> Image Generation: 2ms
+```
 
 Which creates:
 
@@ -159,42 +179,29 @@ You can find it in `Examples/Northwind.mddl` ... the graph for this model is:
 
 Generating MySQL Create statements is easy peasy, just run this:
 
-    steven at Stevens-MacBook-Air in /OSS/stricture on master
-    $ node Stricture.js -i ./Examples/Northwind.mddl.json -c MySQL
-    Stricture JSON DDL Processing Utility
-    Contact: Steven Velozo <steven@velozo.com>
+```sh
+$ node Stricture -i "./build/Stricture_Output.json" -c MySQL
+Stricture JSON DDL Processing Utility
+Contact: Steven Velozo <steven@velozo.com>
 
-    ---
+---
 
-    --> Loading ./Examples/Northwind.mddl.json
-      > file loaded successfully.
-    --> ... creating contextual Index ==> Table lookups ...
-      > Adding the table Categories to the lookup cache with the key CategoryID
-      > Adding the table CustomerDemographics to the lookup cache with the key CustomerTypeID
-      > Adding the table Customers to the lookup cache with the key CustomerID
-      > Adding the table Employees to the lookup cache with the key EmployeeID
-      > Adding the table Orders to the lookup cache with the key OrderID
-      > Adding the table Products to the lookup cache with the key ProductID
-      > Adding the table Region to the lookup cache with the key RegionID
-      > Adding the table Shippers to the lookup cache with the key ShipperID
-      > Adding the table Suppliers to the lookup cache with the key SupplierID
-      > Adding the table Territories to the lookup cache with the key TerritoryID
 
-    --> Running Command: MySQL
-    --> Building the table create file...
-      > Categories
-      > CustomerCustomerDemo
-      > CustomerDemographics
-      > Customers
-      > Employees
-      > EmployeeTerritories
-      > OrderDetails
-      > Orders
-      > Products
-      > Region
-      > Shippers
-      > Suppliers
-      > Territories
+--> Running Command: MySQL
+--> Loading ./build/Stricture_Output.json
+  > file loaded successfully.
+--> ... creating contextual Index ==> Table lookups ...
+  > Adding the table User to the lookup cache with the key IDUser
+  > Adding the table Contact to the lookup cache with the key IDContact
+  > Adding the table Address to the lookup cache with the key IDAddress
+  > indices built successfully.
+  > executing script: function
+--> Building the table create file...
+  > User
+  > Contact
+  > Address
+Stricture Command Execution: 9ms
+```
 
 Which generates some MySQL create statements in the file 'build/Stricture_Output.mysql.sql' that look like the following:
 
@@ -221,4 +228,4 @@ Which generates some MySQL create statements in the file 'build/Stricture_Output
 
 ### Meadow Schema Files
 
-    You can also generate meadow schema files!  Just run stricture with the 'Meadow' command. 
+    You can also generate meadow schema files!  Just run stricture with the 'Meadow' command.

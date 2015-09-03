@@ -51,6 +51,10 @@ var parseCommandLineOptions = function()
 		_Options.InputFileName = libYargs.argv.i;
 	}
 
+	// The -f OutputLocation parameter (defaults to "./build/")
+	if (libYargs.argv.f !== undefined)
+		_Options.OutputLocation = libYargs.argv.f;
+
 	// The -o OutputFileName parameter (defaults to "Stricture_Output")
 	if (libYargs.argv.o !== undefined)
 		_Options.OutputFileName = libYargs.argv.o;
