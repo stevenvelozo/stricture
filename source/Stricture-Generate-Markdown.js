@@ -31,15 +31,17 @@ var GenerateMarkdownDictionary = function(pFable)
 	var tmpTableFile = tmpMarkdownFolder+'Dictionary.md';
 	var tmpChangeTrackingFile = tmpMarkdownFolder+'ModelChangeTracking.md';
 
+	// This generates markdown with wiki add-ins compatible with the orator-wiki project.
+
 	console.log('--> Building the markdown data model documentation...');
 	console.log('  > Tables of Contents');
 	// TODO: Change this to underscore templates.
 	libFS.writeFileSync(tmpTableFile, '##### {DocumentationIndex|Home} > {Model/DataModel|Data Model} > {Model/Dictionary/Dictionary|Data Dictionary}'+"\n");
 	libFS.appendFileSync(tmpTableFile, "\n");
-	libFS.appendFileSync(tmpTableFile, "Headlight Data Dictionary\n");
+	libFS.appendFileSync(tmpTableFile, "Data Dictionary\n");
 	libFS.appendFileSync(tmpTableFile, "=========================\n");
 	libFS.appendFileSync(tmpTableFile, "\n");
-	libFS.appendFileSync(tmpTableFile, "Each entry below describes a single table in the Headlight database.\n");
+	libFS.appendFileSync(tmpTableFile, "Each entry below describes a single table in the database.\n");
 	libFS.appendFileSync(tmpTableFile, "\n");
 	libFS.appendFileSync(tmpTableFile, "Table | Column Count \n");
 	libFS.appendFileSync(tmpTableFile, "----- | -----------: \n");
@@ -80,7 +82,7 @@ var GenerateMarkdownDictionary = function(pFable)
 	libFS.appendFileSync(tmpChangeTrackingFile, "Table Change Tracking\n");
 	libFS.appendFileSync(tmpChangeTrackingFile, "=====================\n");
 	libFS.appendFileSync(tmpChangeTrackingFile, "\n");
-	libFS.appendFileSync(tmpChangeTrackingFile, "The following table describes which Headlight tables have implicit create, update and delete change tracking (provided by the API architecture).  This does not include any kind of media archival or record longitudinal backups; just timestamps and user stamps for the last action of each type.\n");
+	libFS.appendFileSync(tmpChangeTrackingFile, "The following table describes which tables have implicit create, update and delete change tracking (provided by the meadow endpoints API architecture).  This does not include any kind of media archival or record longitudinal backups; just timestamps and user stamps for the last action of each type.\n");
 	libFS.appendFileSync(tmpChangeTrackingFile, "\n");
 	libFS.appendFileSync(tmpChangeTrackingFile, "Table | Create | Update | Delete \n");
 	libFS.appendFileSync(tmpChangeTrackingFile, "----- | :----: | :----: | :----: \n");
