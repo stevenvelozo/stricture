@@ -12,6 +12,53 @@ var libJSONFile = require('jsonfile');
 
 var ReadMicroDDLFile = function(pFable, pFileName, fComplete)
 {
+	// Each of these objects have hash entries for each table.
+	pFable.Model = (
+	{
+		Schema: {},
+		APIDefinitions:
+			{
+				// By default, all API endpoints are represented.
+				__DefaultAPIDefinition:
+					{
+						Create: true,
+
+						Read: true,
+						Reads: true,
+						ReadsBy: true,
+						ReadMax: true,
+						ReadSelectList: true,
+
+						Update: true,
+
+						Delete: true,
+
+						Count: true,
+						CountBy: true,
+
+						Schema: true,
+						Validate: true,
+						New: true
+					}
+			},
+		APISecurity:
+			{
+				/* Six roles:
+				 *   Role 0: Disabled
+				 *   Role 1: User
+				 *   Role 2: Manager
+				 *   Role 3: Director
+				 *   Role 4: Executive
+				 *   Role 5: Administrator
+				 */
+				__DefaultAPISecurity:
+					{
+
+					}
+			},
+		PictDefinitions: {}
+	});
+
 	var tmpLineCount = 0;
 	var tmpTableCount = 0;
 	var tmpPropertyCount = 0;
