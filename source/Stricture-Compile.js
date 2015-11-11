@@ -50,11 +50,30 @@ var ReadMicroDDLFile = function(pFable, pFileName, fComplete)
 				 *   Role 3: Director
 				 *   Role 4: Executive
 				 *   Role 5: Administrator
+				 *
+				 * Mine
+				 * Any
+				 * MyCustomer
+				 * None
 				 */
 				__DefaultAPISecurity:
 					{
-
+						Create: 'Mine',
+						Read: 'All'
+					},
+				Read:
+				{
+					User:
+					{
+						Create: 'Mine',
+						Read: 'All'
+					},
+					Executive:
+					{
+						Create: 'All',
+						Read: 'All'
 					}
+				}
 			},
 		PictDefinitions: {}
 	});
