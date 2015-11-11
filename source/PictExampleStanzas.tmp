@@ -1,0 +1,22 @@
+[Authorization __DefaultAPIDefinition]
+Reads User Mine
+Read Executive None
+
+[Authorization Observation]
+Read User MyCustomer
+
+[API Observation]
+-ReadsBy
+
+[PICT List Observation]
+Name
+CreatedByID Name
+CreateDate
+Priority
+
+[PICT List User]
+NameFirst
+NameLast
+Email #EmailLink
+FieldOffice Name
+CreateDate (MM-DD-YYYY-afeajfioea)

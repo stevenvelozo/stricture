@@ -1,36 +1,52 @@
+// ##### Part of the **[retold](https://stevenvelozo.github.io/retold/)** system
 /**
-* Stricture - Compiler from MicroDDL to JSON
-*
 * @license MIT
-*
-* @author Steven Velozo <steven@velozo.com>
-* @module Stricture
+* @author <steven@velozo.com>
 */
 var libFS = require('fs');
 var libLineReader = require('line-by-line');
+var libJSONFile = require('jsonfile');
+var libUnderscore = require('underscore');
 
-/***********
- * MicroDDL Compiler
- *
- *****/
- var CompileMicroDDL = function(pFable)
- {
-	var tmpJSONFile = pFable.settings.OutputLocation+pFable.settings.OutputFileName+'.json';
+/**
+* Stricture MicroDDL Compiler
+*/
 
-	var tmpLineCount = 0;
-	var tmpTableCount = 0;
-	var tmpPropertyCount = 0;
-	var tmpColumnCount = 0;
-	var tmpCurrentTable = false;
+// ## Load the default state for meadow and pict configuration settings
+var _DefaultAPIDefinitions = require(__dirname+'/Meadow-Endpoints-Definition-Defaults.js')
+var _DefaultAPISecurity = require(__dirname+'/Meadow-Endpoints-Security-Defaults.js');
 
-	console.info('--> Compiling MicroDDL to JSON');
-	console.log('  > Input file:  '+pFable.settings.InputFileName)
-	console.log('  > Output file: '+tmpJSONFile)
+var _DefaultPict = require(__dirname+'/Pict-Configuration-Defaults.js');
 
-	libFS.appendFileSync(tmpJSONFile, "{\n\t[\n");
+var ReadMicroDDLFile = function(pFable, pFileName, fComplete)
+{
+	pFable.DDLParserState = (
+	{
+		LineCount: 0,
+		TableCount: 0,
+		ColumnCount: 0,
+		InStanza: false,
+		CurrentScope: 'None',
+		StanzaType: 'None'
+	});
+
+	// Add a scope if it doesn't exist
+	var InitializeScope = function(pScopeHash, pFable)
+	{
+		if (!pFable.Stricture.Tables.hasOwnProperty(pScopeHash))
+		{
+			pFable.Stricture.Tables[pScopeHash] = { TableName:pScopeHash, Columns:[] };
+			pFable.Stricture.TablesSequence.push(pScopeHash);
+
+			pFable.Stricture.Endpoints = libUnderscore.extend({}, _DefaultAPIDefinitions);
+			pFable.Stricture.Authorization[pScopeHash] = libUnderscore.extend({}, _DefaultAPISecurity);
+
+			pFable.Stricture.Pict[pScopeHash] = libUnderscore.extend({}, _DefaultPict);
+		}
+	};
 
 	// Parse the file line-by-line
-	var tmpLineReader = new libLineReader(pFable.settings.InputFileName);
+	var tmpLineReader = new libLineReader(pFileName);
 
 	tmpLineReader.on('error',
 		function (pError)
@@ -45,36 +61,42 @@ var libLineReader = require('line-by-line');
 		{
 			tmpLineReader.pause();
 
-			//console.log('  > Line read: '+pLine);
-
-			tmpLineCount++;
+			pFable.DDLParserState.LineCount++;
 			var tmpLine = pLine.trim();
 			var tmpLineSplit = tmpLine.split(' ');
 
-			// If we aren't in a table currently, the only thing we look for is a table start
-			if (tmpCurrentTable === false)
+			if (tmpLine === '')
 			{
+				// Reset the stanza and scope data
+				pFable.DDLParserState.StanzaType = 'None';
+				pFable.DDLParserState.CurrentScope = 'None';
+			}
+			// If we aren't in a table currently, the only thing we look for is a table start
+			else if (pFable.DDLParserState.CurrentScope === 'None')
+			{
+				// Check for a table create stanza
 				if (tmpLine.charAt(0) === '!')
 				{
-					// This is a table create statement, grab the table name from the first argument
-					tmpCurrentTable = tmpLineSplit[0].substring(1);
+					pFable.DDLParserState.StanzaType = 'TableSchema';
+					pFable.DDLParserState.CurrentScope = tmpLineSplit[0].substring(1);
+					// Add the table to the model if it doesn't exist.
+					InitializeScope(pFable.DDLParserState.CurrentScope, pFable);
 
-					// If it is the first table, start off our file.
-					// Otherwise, put in a comma between tables.
-					if (tmpTableCount == 0)
-					{
-						// Write out the beginning of the json file
-						libFS.writeFileSync(tmpJSONFile, '{\n  "Tables":\n    [');
-					}
-					else
-					{
-						libFS.appendFileSync(tmpJSONFile, ',');
-					}
+					console.log('  > Line #'+pFable.DDLParserState.LineCount+' begins table stanza: '+pFable.DDLParserState.CurrentScope);
 
-					console.log('  > Line #'+tmpLineCount+' begins table stanza: '+tmpCurrentTable);
-					libFS.appendFileSync(tmpJSONFile, '\n      {\n        "TableName": "'+tmpCurrentTable+'",\n        "Columns":\n        [')
-					tmpColumnCount = 0;
-					tmpTableCount++;
+					pFable.DDLParserState.TableCount++;
+				}
+				// Check for an extended stanza
+				else if ((tmpLineSplit[0] === '[Authorization') && (tmpLine.charAt(tmpLine.length-1) === ']'))
+				{
+					pFable.DDLParserState.StanzaType = 'ExtendedStanza-Authorization';
+
+					pFable.DDLParserState.CurrentScope = tmpLineSplit[1].substring(0, tmpLineSplit[1].length-1);
+					// Add the table to the model if it doesn't exist.
+					InitializeScope(pFable.DDLParserState.CurrentScope, pFable);
+
+					console.log('  > Line #'+pFable.DDLParserState.LineCount+' begins authorizor stanza: '+pFable.DDLParserState.CurrentScope);
+
 				}
 				else
 				{
@@ -82,25 +104,33 @@ var libLineReader = require('line-by-line');
 					if (tmpLine !== '')
 					{
 						// Tell the user that they typed something that was ignored.
-						console.error('  > Compiler ignoring line #'+tmpLineCount+' because it is not within a table stanza.');
+						console.error('  > Compiler ignoring line #'+pFable.DDLParserState.LineCount+' because it is not within a table stanza.');
+						console.error('    Content: '+tmpLine);
 					}
 				}
 			}
-			else
+			else if (pFable.DDLParserState.StanzaType == 'ExtendedStanza-Authorization')
 			{
-				// Blank lines are separators between stanzas of tables
-				if (tmpLine === '')
+				// We are expecting at least three tokens
+				if (tmpLineSplit.length < 3)
 				{
-					// Close out of the table stanza
-					tmpCurrentTable = false;
-					libFS.appendFileSync(tmpJSONFile, "\n        ]\n      }");
+					console.error('  > Compiler ignoring extended line #'+pFable.DDLParserState.LineCount+' because it does not have enough tokens.');
 				}
-
+				else
+				{
+					// Now assign the authorizer.
+					// TODO: Deal with lists (arrays?  commas?  slashes?  ... pipes?)
+					console.log('  > Setting custom authorization for entity '+pFable.DDLParserState.CurrentScope+' - '+tmpLineSplit[1]+'.'+tmpLineSplit[0]+' => '+tmpLineSplit[2]+' [FROM '+pFable.Stricture.Authorization[pFable.DDLParserState.CurrentScope][tmpLineSplit[1]][tmpLineSplit[0]]+']');
+					pFable.Stricture.Authorization[pFable.DDLParserState.CurrentScope][tmpLineSplit[1]][tmpLineSplit[0]] = tmpLineSplit[2];
+				}
+			}
+			else if (pFable.DDLParserState.StanzaType == 'TableSchema')
+			{
 				// The character at index 0 defines the line type
 				var tmpLineTypeCharacter = tmpLine.charAt(0);
 				//console.log('   > Line type character: '+tmpLineTypeCharacter);
 				var tmpLineType = 'Comment';
-				var tmpLineProperties = {};
+				var tmpColumn = {};
 
 				/* ```
 				 * Symbols:
@@ -119,11 +149,11 @@ var libLineReader = require('line-by-line');
 				// TODO: Push each of these off into their own functions.
 				if (tmpLineSplit[0].length > 1)
 				{
-					tmpLineProperties.Column = tmpLineSplit[0].substring(1);
+					tmpColumn.Column = tmpLineSplit[0].substring(1);
 				}
 				else
 				{
-					tmpLineProperties.Column = tmpCurrentTable+'_UnknownColumn_'+tmpColumnCount;
+					tmpColumn.Column = pFable.DDLParserState.CurrentScope+'_UnknownColumn_'+tmpColumnCount;
 				}
 
 				// This parses each line looking for column definitions
@@ -132,75 +162,75 @@ var libLineReader = require('line-by-line');
 					case '@':
 						// ### Identity column
 						tmpLineType = 'Column';
-						tmpLineProperties.DataType = 'ID';
+						tmpColumn.DataType = 'ID';
 						break;
 
 					case '%':
 						// ### GUID
 						tmpLineType = 'Column';
-						tmpLineProperties.DataType = 'GUID';
+						tmpColumn.DataType = 'GUID';
 						break;
 
 					case '$':
 						// ### String
 						tmpLineType = 'Column';
-						tmpLineProperties.DataType = 'String';
-						tmpLineProperties.Size = '64';
+						tmpColumn.DataType = 'String';
+						tmpColumn.Size = '64';
 						// Test if there are more than 1 parameters and the second is numeric
 						if ((tmpLineSplit.length > 1) && (tmpLineSplit[1].match(/^[0-9]+$/) !== null))
 						{
 							// Override the default size if so
-							tmpLineProperties.Size = tmpLineSplit[1];
+							tmpColumn.Size = tmpLineSplit[1];
 						}
 						break;
 
 					case '#':
 						// ### Integer Number
 						tmpLineType = 'Column';
-						tmpLineProperties.DataType = 'Numeric';
+						tmpColumn.DataType = 'Numeric';
 						// Test if there are more than 1 parameters and the second is numeric
 						if ((tmpLineSplit.length > 1) && (tmpLineSplit[1].match(/^[0-9]+$/) !== null))
 						{
 							// Override the default size if so
-							tmpLineProperties.Size = tmpLineSplit[1];
+							tmpColumn.Size = tmpLineSplit[1];
 						}
 						break;
 
 					case '.':
 						// ### Decimal Number
 						tmpLineType = 'Column';
-						tmpLineProperties.DataType = 'Decimal';
-						tmpLineProperties.Size = '10,3';
+						tmpColumn.DataType = 'Decimal';
+						tmpColumn.Size = '10,3';
 						// Test if there are more than 1 parameters and the second is numeric with a comma
 						if ((tmpLineSplit.length > 1) && (tmpLineSplit[1].match(/^[0-9,]+$/) !== null))
 						{
 							// Override the default size if so
-							tmpLineProperties.Size = tmpLineSplit[1];
+							tmpColumn.Size = tmpLineSplit[1];
 						}
 						break;
 
 					case '*':
 						// ### Integer Number
 						tmpLineType = 'Column';
-						tmpLineProperties.DataType = 'Text';
+						tmpColumn.DataType = 'Text';
 						break;
 
 					case '&':
 						// ### Integer Number
 						tmpLineType = 'Column';
-						tmpLineProperties.DataType = 'DateTime';
+						tmpColumn.DataType = 'DateTime';
 						break;
 
 					case '^':
 						// ### Integer Number
 						tmpLineType = 'Column';
-						tmpLineProperties.DataType = 'Boolean';
+						tmpColumn.DataType = 'Boolean';
 						break;
 
 					case '^':
 						// ### Integer Number
 						tmpLineType = 'Column';
-						tmpLineProperties.DataType = 'Boolean';
+						tmpColumn.DataType = 'Boolean';
 						break;
 				}
 				// Detect a join definition
@@ -208,26 +238,22 @@ var libLineReader = require('line-by-line');
 				{
 					if (tmpLineSplit[tmpLineSplit.length - 2] == '->')
 					{
-						tmpLineProperties.Join = tmpLineSplit[tmpLineSplit.length - 1];
+						tmpColumn.Join = tmpLineSplit[tmpLineSplit.length - 1];
 					}
 				}
 
+				// Now deal with the collected state about the line
+				if (tmpLineType === 'Column')
+				{
+					pFable.Stricture.Tables[pFable.DDLParserState.CurrentScope].Columns.push(tmpColumn);
+				}
 				if (tmpLineType === 'Comment')
 				{
 					// This line is not recognized and not empty, so we are going to treat it like a comment.
 					if (tmpLine !== '')
 					{
-						console.log('  > Comment on line #'+tmpLineCount+': '+tmpLine);
+						console.log('  > Comment on line #'+pFable.DDLParserState.LineCount+': '+tmpLine);
 					}
-				}
-				else if (tmpLineType === 'Column')
-				{
-					if (tmpColumnCount > 0)
-					{
-						libFS.appendFileSync(tmpJSONFile, ',');
-					}
-					libFS.appendFileSync(tmpJSONFile, '\n          '+JSON.stringify(tmpLineProperties));
-					tmpColumnCount++;
 				}
 			}
 
@@ -238,13 +264,84 @@ var libLineReader = require('line-by-line');
 	tmpLineReader.on('end',
 		function ()
 		{
-			// All lines are read, file is closed now.
-			if (tmpCurrentTable !== false)
-			{
-					libFS.appendFileSync(tmpJSONFile, "\n        ]\n      }");
-			}
-			libFS.appendFileSync(tmpJSONFile, "\n    ]\n}\n");
-			console.log('  > Compilation complete');
+			console.log('  > Compilation complete for '+pFileName);
+			fComplete();
+		}
+	);
+};
+
+/***********
+ * MicroDDL Compiler
+ *
+ *****/
+ var CompileMicroDDL = function(pFable)
+ {
+	var tmpStrictureModelFile = pFable.settings.OutputLocation+pFable.settings.OutputFileName+'.json';
+	var tmpStrictureModelExtendedFile = pFable.settings.OutputLocation+pFable.settings.OutputFileName+'-Extended.json';
+
+	pFable.Stricture = (
+		{
+			// This hash table will hold the model
+			Tables: {},
+
+			// This array will hold the order for the tables in the model, so they match the order they are first introduced to Stricture
+			TablesSequence: [],
+
+			// This hash table will hold the authenticator configuration for the entire model
+			Authorization: {},
+
+			// This hash table will hold the meadow endpoint configuration for the entire model
+			Endpoints: {},
+
+			Pict: {}
+		}
+	);
+
+	console.info('--> Compiling MicroDDL to JSON');
+	console.log('  > Input file:  '+pFable.settings.InputFileName);
+	console.log('  > Output file: '+tmpStrictureModelFile);
+	console.log('  > Extended Output file: '+tmpStrictureModelExtendedFile);
+
+	// Read in the file
+	console.info('  > Reading DDL File(s)');				
+	ReadMicroDDLFile(pFable, pFable.settings.InputFileName, 
+		function()
+		{
+			// Generate the output
+			console.info('  > Metacompiling the Model');	
+			libJSONFile.writeFile(tmpStrictureModelFile,
+				{Tables: pFable.Stricture.Tables},
+				{spaces: 4},
+				function(pError) 
+				{
+					if (pError)
+					{
+						console.error('  > Error writing out model JSON: '+pError);
+					}
+					else
+					{
+						console.info('  > Model JSON Successfully Written');				
+					}
+				}
+			);
+
+			// Generate the output
+			console.info('  > Compiling the Extended Model');
+			libJSONFile.writeFile(tmpStrictureModelExtendedFile,
+				pFable.Stricture,
+				{spaces: 4},
+				function(pError) 
+				{
+					if (pError)
+					{
+						console.error('  > Error writing out model JSON: '+pError);
+					}
+					else
+					{
+						console.info('  > Extended Model JSON Successfully Written');				
+					}
+				}
+			);
 		}
 	);
 };

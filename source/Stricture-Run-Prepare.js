@@ -37,6 +37,7 @@ var loadJSON = function(fComplete)
 	libJsonFile.readFile
 	(
 		_Fable.settings.InputFileName,
+
 		function(pError, pModel)
 		{
 			console.log('--> Loading '+_Fable.settings.InputFileName);
@@ -58,6 +59,17 @@ var loadJSON = function(fComplete)
 			_Fable.Model = pModel;
 			// Now create the indices
 			_Fable.ModelIndices = generateIndexedTables(pModel);
+
+			if (_Fable.Model.hasOwnProperty('Authorization'))
+			{
+				console.log('  > this is an extended model file!');
+				_Fable.settings.ExtendedModel = true;
+			}
+			else
+			{
+				console.log('  > this is NOT an extended model file!  Some commands will not work.');
+				_Fable.settings.ExtendedModel = true;
+			}
 
 			console.log('  > executing script: '+typeof(tmpComplete));
 
