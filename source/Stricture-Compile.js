@@ -8,18 +8,29 @@
 */
 var libFS = require('fs');
 var libLineReader = require('line-by-line');
-var libJSONFile = require('jsonfile');
 
-var ReadMicroDDLFile = function(pFable, pFileName, fComplete)
-{
+/***********
+ * MicroDDL Compiler
+ *
+ *****/
+ var CompileMicroDDL = function(pFable)
+ {
+	var tmpJSONFile = pFable.settings.OutputLocation+pFable.settings.OutputFileName+'.json';
+
 	var tmpLineCount = 0;
 	var tmpTableCount = 0;
 	var tmpPropertyCount = 0;
 	var tmpColumnCount = 0;
-	var tmpInStanza = false;
+	var tmpCurrentTable = false;
+
+	console.info('--> Compiling MicroDDL to JSON');
+	console.log('  > Input file:  '+pFable.settings.InputFileName)
+	console.log('  > Output file: '+tmpJSONFile)
+
+	libFS.appendFileSync(tmpJSONFile, "{\n\t[\n");
 
 	// Parse the file line-by-line
-	var tmpLineReader = new libLineReader(pFileName);
+	var tmpLineReader = new libLineReader(pFable.settings.InputFileName);
 
 	tmpLineReader.on('error',
 		function (pError)
@@ -65,10 +76,6 @@ var ReadMicroDDLFile = function(pFable, pFileName, fComplete)
 					tmpColumnCount = 0;
 					tmpTableCount++;
 				}
-				else if ((tmpLine.charAt(0) === '[') && (tmpLine.charAt(tmpLine.length-1) === ']'))
-				{
-					// This is an extended stanza.
-				}
 				else
 				{
 					// We are ignoring all lines that aren't in table stanzas
@@ -81,6 +88,14 @@ var ReadMicroDDLFile = function(pFable, pFileName, fComplete)
 			}
 			else
 			{
+				// Blank lines are separators between stanzas of tables
+				if (tmpLine === '')
+				{
+					// Close out of the table stanza
+					tmpCurrentTable = false;
+					libFS.appendFileSync(tmpJSONFile, "\n        ]\n      }");
+				}
+
 				// The character at index 0 defines the line type
 				var tmpLineTypeCharacter = tmpLine.charAt(0);
 				//console.log('   > Line type character: '+tmpLineTypeCharacter);
@@ -205,6 +220,15 @@ var ReadMicroDDLFile = function(pFable, pFileName, fComplete)
 						console.log('  > Comment on line #'+tmpLineCount+': '+tmpLine);
 					}
 				}
+				else if (tmpLineType === 'Column')
+				{
+					if (tmpColumnCount > 0)
+					{
+						libFS.appendFileSync(tmpJSONFile, ',');
+					}
+					libFS.appendFileSync(tmpJSONFile, '\n          '+JSON.stringify(tmpLineProperties));
+					tmpColumnCount++;
+				}
 			}
 
 			tmpLineReader.resume();
@@ -221,58 +245,6 @@ var ReadMicroDDLFile = function(pFable, pFileName, fComplete)
 			}
 			libFS.appendFileSync(tmpJSONFile, "\n    ]\n}\n");
 			console.log('  > Compilation complete');
-			fComplete();
-		}
-	);
-};
-
-var CompileMicroDDL = function(pFable)
-{
-	pFable.StrictureModel.Tables = []
-};
-
-/***********
- * MicroDDL Compiler
- *
- *****/
- var CompileMicroDDL = function(pFable)
- {
-	var tmpJSONFile = pFable.settings.OutputLocation+pFable.settings.OutputFileName+'.json';
-
-	// This hash table will hold the state for the entire model
-	var pFable.StrictureModelState = {};
-	// This array will hold the en
-	var pFable.StrictureModel = { };
-	// This hash table will hold the order for the tables in the model, so they match the order they are introduced to the model first
-	var pFable.StrictureModelSequence = [];
-
-	console.info('--> Compiling MicroDDL to JSON');
-	console.log('  > Input file:  '+pFable.settings.InputFileName)
-	console.log('  > Output file: '+tmpJSONFile)
-
-	// Read in the file
-	console.info('  > Reading DDL File(s)');				
-	ReadMicroDDLFile(pFable, pFable.settings.InputFileName, 
-		function()
-		{
-			// Generate the output
-			console.info('  > Compiling the Model');				
-			CompileMicroDDL(pFable);
-
-			// Now write out the JSON
-			jsonfile.writeFile(tmpJSONFile, pFable.StrictureModel, {spaces: 4}, 
-				function(pError) 
-				{
-					if (pError)
-					{
-						console.error('  > Error writing out model JSON: '+pError);
-					}
-					else
-					{
-						console.info('  > Model JSON Successfully Written');				
-					}
-				}
-			);
 		}
 	);
 };
