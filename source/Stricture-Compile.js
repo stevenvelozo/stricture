@@ -303,7 +303,7 @@ var ReadMicroDDLFile = function(pFable, pFileName, fComplete)
 			// Generate the output
 			console.info('  > Compiling the Extended Model');
 			libJSONFile.writeFile(tmpStrictureModelExtendedFile,
-				pFable.Stricture.Tables,
+				pFable.Stricture,
 				{spaces: 4},
 				function(pError) 
 				{
