@@ -1,18 +1,16 @@
-// ##### Part of the **[retold](https://stevenvelozo.github.io/retold/)** system
 /**
+* Stricture - Compiler from MicroDDL to JSON
+*
 * @license MIT
-* @author <steven@velozo.com>
+*
+* @author Steven Velozo <steven@velozo.com>
+* @module Stricture
 */
 var libFS = require('fs');
 var libLineReader = require('line-by-line');
 var libJSONFile = require('jsonfile');
 var libUnderscore = require('underscore');
 
-/**
-* Stricture MicroDDL Compiler
-*/
-
-// ## Load the default state for meadow and pict configuration settings
 var _DefaultAPIDefinitions = require(__dirname+'/Meadow-Endpoints-Definition-Defaults.js')
 var _DefaultAPISecurity = require(__dirname+'/Meadow-Endpoints-Security-Defaults.js');
 
@@ -20,7 +18,7 @@ var _DefaultPict = require(__dirname+'/Pict-Configuration-Defaults.js');
 
 var ReadMicroDDLFile = function(pFable, pFileName, fComplete)
 {
-	pFable.DDLParserState = (
+	var tmpParserState = (
 	{
 		LineCount: 0,
 		TableCount: 0,
@@ -39,7 +37,7 @@ var ReadMicroDDLFile = function(pFable, pFileName, fComplete)
 			pFable.Stricture.TablesSequence.push(pScopeHash);
 
 			pFable.Stricture.Endpoints = libUnderscore.extend({}, _DefaultAPIDefinitions);
-			pFable.Stricture.Authorization[pScopeHash] = libUnderscore.extend({}, _DefaultAPISecurity);
+			pFable.Stricture.Authentication[pScopeHash] = libUnderscore.extend({}, _DefaultAPISecurity);
 
 			pFable.Stricture.Pict[pScopeHash] = libUnderscore.extend({}, _DefaultPict);
 		}
@@ -61,42 +59,34 @@ var ReadMicroDDLFile = function(pFable, pFileName, fComplete)
 		{
 			tmpLineReader.pause();
 
-			pFable.DDLParserState.LineCount++;
+			tmpParserState.LineCount++;
 			var tmpLine = pLine.trim();
 			var tmpLineSplit = tmpLine.split(' ');
 
 			if (tmpLine === '')
 			{
 				// Reset the stanza and scope data
-				pFable.DDLParserState.StanzaType = 'None';
-				pFable.DDLParserState.CurrentScope = 'None';
+				tmpParserState.StanzaType = 'None';
+				tmpParserState.CurrentScope = 'None';
 			}
 			// If we aren't in a table currently, the only thing we look for is a table start
-			else if (pFable.DDLParserState.CurrentScope === 'None')
+			else if (tmpParserState.CurrentScope === 'None')
 			{
 				// Check for a table create stanza
 				if (tmpLine.charAt(0) === '!')
 				{
-					pFable.DDLParserState.StanzaType = 'TableSchema';
-					pFable.DDLParserState.CurrentScope = tmpLineSplit[0].substring(1);
+					tmpParserState.StanzaType = 'TableSchema';
+					tmpParserState.CurrentScope = tmpLineSplit[0].substring(1);
 					// Add the table to the model if it doesn't exist.
-					InitializeScope(pFable.DDLParserState.CurrentScope, pFable);
+					InitializeScope(tmpParserState.CurrentScope, pFable);
 
-					console.log('  > Line #'+pFable.DDLParserState.LineCount+' begins table stanza: '+pFable.DDLParserState.CurrentScope);
+					console.log('  > Line #'+tmpParserState.LineCount+' begins table stanza: '+tmpParserState.CurrentScope);
 
-					pFable.DDLParserState.TableCount++;
+					tmpParserState.TableCount++;
 				}
 				// Check for an extended stanza
-				else if ((tmpLineSplit[0] === '[Authorization') && (tmpLine.charAt(tmpLine.length-1) === ']'))
+				else if ((tmpLine.charAt(0) === '[') && (tmpLine.charAt(tmpLine.length-1) === ']'))
 				{
-					pFable.DDLParserState.StanzaType = 'ExtendedStanza-Authorization';
-
-					pFable.DDLParserState.CurrentScope = tmpLineSplit[1].substring(0, tmpLineSplit[1].length-1);
-					// Add the table to the model if it doesn't exist.
-					InitializeScope(pFable.DDLParserState.CurrentScope, pFable);
-
-					console.log('  > Line #'+pFable.DDLParserState.LineCount+' begins authorizor stanza: '+pFable.DDLParserState.CurrentScope);
-
 				}
 				else
 				{
@@ -104,27 +94,12 @@ var ReadMicroDDLFile = function(pFable, pFileName, fComplete)
 					if (tmpLine !== '')
 					{
 						// Tell the user that they typed something that was ignored.
-						console.error('  > Compiler ignoring line #'+pFable.DDLParserState.LineCount+' because it is not within a table stanza.');
+						console.error('  > Compiler ignoring line #'+tmpParserState.LineCount+' because it is not within a table stanza.');
 						console.error('    Content: '+tmpLine);
 					}
 				}
 			}
-			else if (pFable.DDLParserState.StanzaType == 'ExtendedStanza-Authorization')
-			{
-				// We are expecting at least three tokens
-				if (tmpLineSplit.length < 3)
-				{
-					console.error('  > Compiler ignoring extended line #'+pFable.DDLParserState.LineCount+' because it does not have enough tokens.');
-				}
-				else
-				{
-					// Now assign the authorizer.
-					// TODO: Deal with lists (arrays?  commas?  slashes?  ... pipes?)
-					console.log('  > Setting custom authorization for entity '+pFable.DDLParserState.CurrentScope+' - '+tmpLineSplit[1]+'.'+tmpLineSplit[0]+' => '+tmpLineSplit[2]+' [FROM '+pFable.Stricture.Authorization[pFable.DDLParserState.CurrentScope][tmpLineSplit[1]][tmpLineSplit[0]]+']');
-					pFable.Stricture.Authorization[pFable.DDLParserState.CurrentScope][tmpLineSplit[1]][tmpLineSplit[0]] = tmpLineSplit[2];
-				}
-			}
-			else if (pFable.DDLParserState.StanzaType == 'TableSchema')
+			else if (tmpParserState.StanzaType == 'TableSchema')
 			{
 				// The character at index 0 defines the line type
 				var tmpLineTypeCharacter = tmpLine.charAt(0);
@@ -153,7 +128,7 @@ var ReadMicroDDLFile = function(pFable, pFileName, fComplete)
 				}
 				else
 				{
-					tmpColumn.Column = pFable.DDLParserState.CurrentScope+'_UnknownColumn_'+tmpColumnCount;
+					tmpColumn.Column = tmpParserState.CurrentScope+'_UnknownColumn_'+tmpColumnCount;
 				}
 
 				// This parses each line looking for column definitions
@@ -245,14 +220,14 @@ var ReadMicroDDLFile = function(pFable, pFileName, fComplete)
 				// Now deal with the collected state about the line
 				if (tmpLineType === 'Column')
 				{
-					pFable.Stricture.Tables[pFable.DDLParserState.CurrentScope].Columns.push(tmpColumn);
+					pFable.Stricture.Tables[tmpParserState.CurrentScope].Columns.push(tmpColumn);
 				}
 				if (tmpLineType === 'Comment')
 				{
 					// This line is not recognized and not empty, so we are going to treat it like a comment.
 					if (tmpLine !== '')
 					{
-						console.log('  > Comment on line #'+pFable.DDLParserState.LineCount+': '+tmpLine);
+						console.log('  > Comment on line #'+tmpParserState.LineCount+': '+tmpLine);
 					}
 				}
 			}
@@ -288,7 +263,7 @@ var ReadMicroDDLFile = function(pFable, pFileName, fComplete)
 			TablesSequence: [],
 
 			// This hash table will hold the authenticator configuration for the entire model
-			Authorization: {},
+			Authentication: {},
 
 			// This hash table will hold the meadow endpoint configuration for the entire model
 			Endpoints: {},
@@ -328,7 +303,7 @@ var ReadMicroDDLFile = function(pFable, pFileName, fComplete)
 			// Generate the output
 			console.info('  > Compiling the Extended Model');
 			libJSONFile.writeFile(tmpStrictureModelExtendedFile,
-				pFable.Stricture,
+				pFable.Stricture.Tables,
 				{spaces: 4},
 				function(pError) 
 				{
