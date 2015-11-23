@@ -1,16 +1,18 @@
+// ##### Part of the **[retold](https://stevenvelozo.github.io/retold/)** system
 /**
-* Stricture - Compiler from MicroDDL to JSON
-*
 * @license MIT
-*
-* @author Steven Velozo <steven@velozo.com>
-* @module Stricture
+* @author <steven@velozo.com>
 */
 var libFS = require('fs');
 var libLineReader = require('line-by-line');
 var libJSONFile = require('jsonfile');
 var libUnderscore = require('underscore');
 
+/**
+* Stricture MicroDDL Compiler
+*/
+
+// ## Load the default state for meadow and pict configuration settings
 var _DefaultAPIDefinitions = require(__dirname+'/Meadow-Endpoints-Definition-Defaults.js')
 var _DefaultAPISecurity = require(__dirname+'/Meadow-Endpoints-Security-Defaults.js');
 
@@ -18,7 +20,7 @@ var _DefaultPict = require(__dirname+'/Pict-Configuration-Defaults.js');
 
 var ReadMicroDDLFile = function(pFable, pFileName, fComplete)
 {
-	var tmpParserState = (
+	pFable.DDLParserState = (
 	{
 		LineCount: 0,
 		TableCount: 0,
@@ -59,30 +61,30 @@ var ReadMicroDDLFile = function(pFable, pFileName, fComplete)
 		{
 			tmpLineReader.pause();
 
-			tmpParserState.LineCount++;
+			pFable.DDLParserState.LineCount++;
 			var tmpLine = pLine.trim();
 			var tmpLineSplit = tmpLine.split(' ');
 
 			if (tmpLine === '')
 			{
 				// Reset the stanza and scope data
-				tmpParserState.StanzaType = 'None';
-				tmpParserState.CurrentScope = 'None';
+				pFable.DDLParserState.StanzaType = 'None';
+				pFable.DDLParserState.CurrentScope = 'None';
 			}
 			// If we aren't in a table currently, the only thing we look for is a table start
-			else if (tmpParserState.CurrentScope === 'None')
+			else if (pFable.DDLParserState.CurrentScope === 'None')
 			{
 				// Check for a table create stanza
 				if (tmpLine.charAt(0) === '!')
 				{
-					tmpParserState.StanzaType = 'TableSchema';
-					tmpParserState.CurrentScope = tmpLineSplit[0].substring(1);
+					pFable.DDLParserState.StanzaType = 'TableSchema';
+					pFable.DDLParserState.CurrentScope = tmpLineSplit[0].substring(1);
 					// Add the table to the model if it doesn't exist.
-					InitializeScope(tmpParserState.CurrentScope, pFable);
+					InitializeScope(pFable.DDLParserState.CurrentScope, pFable);
 
-					console.log('  > Line #'+tmpParserState.LineCount+' begins table stanza: '+tmpParserState.CurrentScope);
+					console.log('  > Line #'+pFable.DDLParserState.LineCount+' begins table stanza: '+pFable.DDLParserState.CurrentScope);
 
-					tmpParserState.TableCount++;
+					pFable.DDLParserState.TableCount++;
 				}
 				// Check for an extended stanza
 				else if ((tmpLine.charAt(0) === '[') && (tmpLine.charAt(tmpLine.length-1) === ']'))
@@ -94,12 +96,12 @@ var ReadMicroDDLFile = function(pFable, pFileName, fComplete)
 					if (tmpLine !== '')
 					{
 						// Tell the user that they typed something that was ignored.
-						console.error('  > Compiler ignoring line #'+tmpParserState.LineCount+' because it is not within a table stanza.');
+						console.error('  > Compiler ignoring line #'+pFable.DDLParserState.LineCount+' because it is not within a table stanza.');
 						console.error('    Content: '+tmpLine);
 					}
 				}
 			}
-			else if (tmpParserState.StanzaType == 'TableSchema')
+			else if (pFable.DDLParserState.StanzaType == 'TableSchema')
 			{
 				// The character at index 0 defines the line type
 				var tmpLineTypeCharacter = tmpLine.charAt(0);
@@ -128,7 +130,7 @@ var ReadMicroDDLFile = function(pFable, pFileName, fComplete)
 				}
 				else
 				{
-					tmpColumn.Column = tmpParserState.CurrentScope+'_UnknownColumn_'+tmpColumnCount;
+					tmpColumn.Column = pFable.DDLParserState.CurrentScope+'_UnknownColumn_'+tmpColumnCount;
 				}
 
 				// This parses each line looking for column definitions
@@ -220,14 +222,14 @@ var ReadMicroDDLFile = function(pFable, pFileName, fComplete)
 				// Now deal with the collected state about the line
 				if (tmpLineType === 'Column')
 				{
-					pFable.Stricture.Tables[tmpParserState.CurrentScope].Columns.push(tmpColumn);
+					pFable.Stricture.Tables[pFable.DDLParserState.CurrentScope].Columns.push(tmpColumn);
 				}
 				if (tmpLineType === 'Comment')
 				{
 					// This line is not recognized and not empty, so we are going to treat it like a comment.
 					if (tmpLine !== '')
 					{
-						console.log('  > Comment on line #'+tmpParserState.LineCount+': '+tmpLine);
+						console.log('  > Comment on line #'+pFable.DDLParserState.LineCount+': '+tmpLine);
 					}
 				}
 			}
