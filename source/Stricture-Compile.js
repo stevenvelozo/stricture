@@ -39,7 +39,7 @@ var ReadMicroDDLFile = function(pFable, pFileName, fComplete)
 			pFable.Stricture.TablesSequence.push(pScopeHash);
 
 			pFable.Stricture.Endpoints = libUnderscore.extend({}, _DefaultAPIDefinitions);
-			pFable.Stricture.Authentication[pScopeHash] = libUnderscore.extend({}, _DefaultAPISecurity);
+			pFable.Stricture.Authorization[pScopeHash] = libUnderscore.extend({}, _DefaultAPISecurity);
 
 			pFable.Stricture.Pict[pScopeHash] = libUnderscore.extend({}, _DefaultPict);
 		}
@@ -87,8 +87,16 @@ var ReadMicroDDLFile = function(pFable, pFileName, fComplete)
 					pFable.DDLParserState.TableCount++;
 				}
 				// Check for an extended stanza
-				else if ((tmpLine.charAt(0) === '[') && (tmpLine.charAt(tmpLine.length-1) === ']'))
+				else if ((tmpLineSplit[0] === '[Authorization') && (tmpLine.charAt(tmpLine.length-1) === ']'))
 				{
+					pFable.DDLParserState.StanzaType = 'ExtendedStanza-Authorization';
+
+					pFable.DDLParserState.CurrentScope = tmpLineSplit[1].substring(0, tmpLineSplit[1].length-1);
+					// Add the table to the model if it doesn't exist.
+					InitializeScope(pFable.DDLParserState.CurrentScope, pFable);
+
+					console.log('  > Line #'+pFable.DDLParserState.LineCount+' begins authorizor stanza: '+pFable.DDLParserState.CurrentScope);
+
 				}
 				else
 				{
@@ -99,6 +107,21 @@ var ReadMicroDDLFile = function(pFable, pFileName, fComplete)
 						console.error('  > Compiler ignoring line #'+pFable.DDLParserState.LineCount+' because it is not within a table stanza.');
 						console.error('    Content: '+tmpLine);
 					}
+				}
+			}
+			else if (pFable.DDLParserState.StanzaType == 'ExtendedStanza-Authorization')
+			{
+				// We are expecting at least three tokens
+				if (tmpLineSplit.length < 3)
+				{
+					console.error('  > Compiler ignoring extended line #'+pFable.DDLParserState.LineCount+' because it does not have enough tokens.');
+				}
+				else
+				{
+					// Now assign the authorizer.
+					// TODO: Deal with lists (arrays?  commas?  slashes?  ... pipes?)
+					console.log('  > Setting custom authorization for entity '+pFable.DDLParserState.CurrentScope+' - '+tmpLineSplit[1]+'.'+tmpLineSplit[0]+' => '+tmpLineSplit[2]+' [FROM '+pFable.Stricture.Authorization[pFable.DDLParserState.CurrentScope][tmpLineSplit[1]][tmpLineSplit[0]]+']');
+					pFable.Stricture.Authorization[pFable.DDLParserState.CurrentScope][tmpLineSplit[1]][tmpLineSplit[0]] = tmpLineSplit[2];
 				}
 			}
 			else if (pFable.DDLParserState.StanzaType == 'TableSchema')
@@ -265,7 +288,7 @@ var ReadMicroDDLFile = function(pFable, pFileName, fComplete)
 			TablesSequence: [],
 
 			// This hash table will hold the authenticator configuration for the entire model
-			Authentication: {},
+			Authorization: {},
 
 			// This hash table will hold the meadow endpoint configuration for the entire model
 			Endpoints: {},

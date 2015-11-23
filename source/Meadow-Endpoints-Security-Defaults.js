@@ -3,6 +3,7 @@
 * @license MIT
 * @author <steven@velozo.com>
 */
+var libUnderscore = require('underscore');
 
 /**
 * Meadow Endpoints Default Security
@@ -126,13 +127,13 @@ module.exports = (
 		 */
 
 		// This is used as a pattern for security on any new endpoint
-		__DefaultAPISecurity: _DenyAll,
+		__DefaultAPISecurity: libUnderscore.extend({}, _DenyAll),
 
-		Unauthenticated: _DenyAll,
-		User: _AllowCustomerMine,
-		Manager: _AllowCustomerMine,
-		Director: _AllowCustomer,
-		Executive: _AllowCustomer,
-		Administrator: _AllowAll
+		Unauthenticated: libUnderscore.extend({}, _DenyAll),
+		User: libUnderscore.extend({}, _AllowCustomerMine),
+		Manager: libUnderscore.extend({}, _AllowCustomerMine),
+		Director: libUnderscore.extend({}, _AllowCustomer),
+		Executive: libUnderscore.extend({}, _AllowCustomer),
+		Administrator: libUnderscore.extend({}, _AllowAll)
 	}
 );
