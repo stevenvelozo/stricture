@@ -78,6 +78,11 @@ var runCommand = function(pFable)
 			break;
 
 		// Generate Meadow Model Descriptions
+		case 'AuthorizationChart':
+			executeModelCommand('./Stricture-Generate-Authorization-Chart.js', pFable);
+			break;
+
+		// Generate Meadow Model Descriptions
 		case 'TestObjectContainers':
 			executeModelCommand('./Stricture-Generate-TestObjectContainers.js', pFable);
 			break;
