@@ -38,21 +38,21 @@ var libFS = require('fs');
 	libFS.appendFileSync(tmpMySQLFile, "\n");
 	libFS.appendFileSync(tmpMySQLFile, "-- This script creates the following tables:\n");
 	libFS.appendFileSync(tmpMySQLFile, "-- Table ----------------------------------------- Column Count ----------------\n");
-	for(var i = 0; i < pFable.Model.Tables.length; i++)
+	for(var tmpTable in pFable.Model.Tables)
 	{
 		var tmpTableRightPad = "                                                  ";
-		var tmpTableName = pFable.Model.Tables[i].TableName+tmpTableRightPad.slice(-(tmpTableRightPad.length - pFable.Model.Tables[i].TableName.length));
-		libFS.appendFileSync(tmpMySQLFile, '--   '+tmpTableName+' '+("      "+pFable.Model.Tables[i].Columns.length).slice(-6)+"\n");
+		var tmpTableName = pFable.Model.Tables[tmpTable].TableName+tmpTableRightPad.slice(-(tmpTableRightPad.length - pFable.Model.Tables[tmpTable].TableName.length));
+		libFS.appendFileSync(tmpMySQLFile, '--   '+tmpTableName+' '+("      "+pFable.Model.Tables[tmpTable].Columns.length).slice(-6)+"\n");
 	}
-	for(var i = 0; i < pFable.Model.Tables.length; i++)
+	for(var tmpTable in pFable.Model.Tables)
 	{
-		console.log('  > '+pFable.Model.Tables[i].TableName);
+		console.log('  > '+pFable.Model.Tables[tmpTable].TableName);
 
 		var tmpPrimaryKey = false;
 
-		libFS.appendFileSync(tmpMySQLFile, "\n\n\n"+'--   [ '+pFable.Model.Tables[i].TableName+' ]');
-		libFS.appendFileSync(tmpMySQLFile, "\nCREATE TABLE IF NOT EXISTS\n    "+pFable.Model.Tables[i].TableName+"\n    (");
-		for (var j = 0; j < pFable.Model.Tables[i].Columns.length; j++)
+		libFS.appendFileSync(tmpMySQLFile, "\n\n\n"+'--   [ '+pFable.Model.Tables[tmpTable].TableName+' ]');
+		libFS.appendFileSync(tmpMySQLFile, "\nCREATE TABLE IF NOT EXISTS\n    "+pFable.Model.Tables[tmpTable].TableName+"\n    (");
+		for (var j = 0; j < pFable.Model.Tables[tmpTable].Columns.length; j++)
 		{
 			// If we aren't the first element, append a comma.
 			if (j > 0)
@@ -60,32 +60,32 @@ var libFS = require('fs');
 
 			libFS.appendFileSync(tmpMySQLFile, "\n");
 			// Dump out each column......
-			switch (pFable.Model.Tables[i].Columns[j].DataType)
+			switch (pFable.Model.Tables[tmpTable].Columns[j].DataType)
 			{
 				case 'ID':
-					libFS.appendFileSync(tmpMySQLFile, "        "+pFable.Model.Tables[i].Columns[j].Column+" INT UNSIGNED NOT NULL AUTO_INCREMENT");
-					tmpPrimaryKey = pFable.Model.Tables[i].Columns[j].Column;
+					libFS.appendFileSync(tmpMySQLFile, "        "+pFable.Model.Tables[tmpTable].Columns[j].Column+" INT UNSIGNED NOT NULL AUTO_INCREMENT");
+					tmpPrimaryKey = pFable.Model.Tables[tmpTable].Columns[j].Column;
 					break;
 				case 'GUID':
-					libFS.appendFileSync(tmpMySQLFile, "        "+pFable.Model.Tables[i].Columns[j].Column+" CHAR(36) NOT NULL DEFAULT '00000000-0000-0000-0000-000000000000'");
+					libFS.appendFileSync(tmpMySQLFile, "        "+pFable.Model.Tables[tmpTable].Columns[j].Column+" CHAR(36) NOT NULL DEFAULT '00000000-0000-0000-0000-000000000000'");
 					break;
 				case 'Numeric':
-					libFS.appendFileSync(tmpMySQLFile, "        "+pFable.Model.Tables[i].Columns[j].Column+" INT NOT NULL DEFAULT '0'");
+					libFS.appendFileSync(tmpMySQLFile, "        "+pFable.Model.Tables[tmpTable].Columns[j].Column+" INT NOT NULL DEFAULT '0'");
 					break;
 				case 'Decimal':
-					libFS.appendFileSync(tmpMySQLFile, "        "+pFable.Model.Tables[i].Columns[j].Column+" DECIMAL("+pFable.Model.Tables[i].Columns[j].Size+")");
+					libFS.appendFileSync(tmpMySQLFile, "        "+pFable.Model.Tables[tmpTable].Columns[j].Column+" DECIMAL("+pFable.Model.Tables[tmpTable].Columns[j].Size+")");
 					break;
 				case 'String':
-					libFS.appendFileSync(tmpMySQLFile, "        "+pFable.Model.Tables[i].Columns[j].Column+" CHAR("+pFable.Model.Tables[i].Columns[j].Size+") NOT NULL DEFAULT ''");
+					libFS.appendFileSync(tmpMySQLFile, "        "+pFable.Model.Tables[tmpTable].Columns[j].Column+" CHAR("+pFable.Model.Tables[tmpTable].Columns[j].Size+") NOT NULL DEFAULT ''");
 					break;
 				case 'Text':
-					libFS.appendFileSync(tmpMySQLFile, "        "+pFable.Model.Tables[i].Columns[j].Column+" TEXT");
+					libFS.appendFileSync(tmpMySQLFile, "        "+pFable.Model.Tables[tmpTable].Columns[j].Column+" TEXT");
 					break;
 				case 'DateTime':
-					libFS.appendFileSync(tmpMySQLFile, "        "+pFable.Model.Tables[i].Columns[j].Column+" DATETIME");
+					libFS.appendFileSync(tmpMySQLFile, "        "+pFable.Model.Tables[tmpTable].Columns[j].Column+" DATETIME");
 					break;
 				case 'Boolean':
-					libFS.appendFileSync(tmpMySQLFile, "        "+pFable.Model.Tables[i].Columns[j].Column+" TINYINT NOT NULL DEFAULT '0'");
+					libFS.appendFileSync(tmpMySQLFile, "        "+pFable.Model.Tables[tmpTable].Columns[j].Column+" TINYINT NOT NULL DEFAULT '0'");
 					break;
 				default:
 					break;

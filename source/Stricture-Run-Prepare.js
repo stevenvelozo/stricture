@@ -15,14 +15,14 @@ var generateIndexedTables = function(pModel)
 	// First create a "lookup" of primary keys that point back to tables
 	console.log('--> ... creating contextual Index ==> Table lookups ...');
 	var tmpIndices = {};
-	for(var i = 0; i < pModel.Tables.length; i++)
+	for(var tmpTable in pModel.Tables)
 	{
-		for (var j = 0; j < pModel.Tables[i].Columns.length; j++)
+		for (var j = 0; j < pModel.Tables[tmpTable].Columns.length; j++)
 		{
-			if (pModel.Tables[i].Columns[j].DataType == "ID")
+			if (pModel.Tables[tmpTable].Columns[j].DataType == "ID")
 			{
-				console.log('  > Adding the table '+pModel.Tables[i].TableName+' to the lookup cache with the key '+pModel.Tables[i].Columns[j].Column);
-				tmpIndices[pModel.Tables[i].Columns[j].Column] = pModel.Tables[i].TableName;
+				console.log('  > Adding the table '+pModel.Tables[tmpTable].TableName+' to the lookup cache with the key '+pModel.Tables[tmpTable].Columns[j].Column);
+				tmpIndices[pModel.Tables[tmpTable].Columns[j].Column] = pModel.Tables[tmpTable].TableName;
 			}
 		}
 	}

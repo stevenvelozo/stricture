@@ -73,27 +73,27 @@ var GenerateRelationshipGraph = function(pFable)
 	libFS.appendFileSync(pFable.DotFileName, 'digraph DataModel {'+"\n");
 	libFS.appendFileSync(pFable.DotFileName, 'rankdir=LR'+"\n");
 	console.log('  > Table Nodes');
-	for(var i = 0; i < pFable.Model.Tables.length; i++)
+	for(var tmpTable in pFable.Model.Tables)
 	{
-		libFS.appendFileSync(pFable.DotFileName, pFable.Model.Tables[i].TableName+';'+"\n");
+		libFS.appendFileSync(pFable.DotFileName, pFable.Model.Tables[tmpTable].TableName+';'+"\n");
 	}
 	console.log('  > Connections');
-	for(var i = 0; i < pFable.Model.Tables.length; i++)
+	for(var tmpTable in pFable.Model.Tables)
 	{
-		for (var j = 0; j < pFable.Model.Tables[i].Columns.length; j++)
+		for (var j = 0; j < pFable.Model.Tables[tmpTable].Columns.length; j++)
 		{
-			if (pFable.Model.Tables[i].Columns[j].Join != undefined)
+			if (pFable.Model.Tables[tmpTable].Columns[j].Join != undefined)
 			{
 				// Only write the connection if:
 				if (
 						pFable.settings.GraphFullJoins || // The user wants to show all joins
 						(
-							(pFable.Model.Tables[i].Columns[j].Column != 'CreatingIDUser') // OR the connection isn't from "CreatingIDUser", "UpdatingIDUser" or "DeletingIDUser"
-							&& (pFable.Model.Tables[i].Columns[j].Column != 'UpdatingIDUser')
-							&& (pFable.Model.Tables[i].Columns[j].Column != 'DeletingIDUser')
+							(pFable.Model.Tables[tmpTable].Columns[j].Column != 'CreatingIDUser') // OR the connection isn't from "CreatingIDUser", "UpdatingIDUser" or "DeletingIDUser"
+							&& (pFable.Model.Tables[tmpTable].Columns[j].Column != 'UpdatingIDUser')
+							&& (pFable.Model.Tables[tmpTable].Columns[j].Column != 'DeletingIDUser')
 						)
 					)
-					libFS.appendFileSync(pFable.DotFileName, pFable.Model.Tables[i].TableName+' -> '+pFable.ModelIndices[pFable.Model.Tables[i].Columns[j].Join]+"\n");
+					libFS.appendFileSync(pFable.DotFileName, pFable.Model.Tables[tmpTable].TableName+' -> '+pFable.ModelIndices[pFable.Model.Tables[tmpTable].Columns[j].Join]+"\n");
 			}
 		}
 	}
