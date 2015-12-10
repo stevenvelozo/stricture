@@ -49,7 +49,8 @@ var GenerateMeadow = function(pFable)
 					type: 'object',
 					properties: {},
 					required: []
-				})
+				}),
+				Authorization: {}
 			});
 			for (var j = 0; j < tmpTable.Columns.length; j++)
 			{
@@ -125,6 +126,11 @@ var GenerateMeadow = function(pFable)
 				}
 				// Now add it to the array
 				tmpModel.Schema.push(tmpSchemaEntry);
+			}
+			// Now add authorizers if they exist
+			if (pFable.Model.hasOwnProperty('Authorization') && pFable.Model.Authorization.hasOwnProperty(tmpTable.TableName))
+			{
+				tmpModel.Authorization = pFable.Model.Authorization[tmpTable.TableName];
 			}
 
 			// Now persist our schema
