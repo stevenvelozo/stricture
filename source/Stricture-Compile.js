@@ -120,8 +120,15 @@ var ReadMicroDDLFile = function(pFable, pFileName, fComplete)
 				{
 					// Now assign the authorizer.
 					// TODO: Deal with lists (arrays?  commas?  slashes?  ... pipes?)
-					console.log('  > Setting custom authorization for entity '+pFable.DDLParserState.CurrentScope+' - '+tmpLineSplit[1]+'.'+tmpLineSplit[0]+' => '+tmpLineSplit[2]+' [FROM '+pFable.Stricture.Authorization[pFable.DDLParserState.CurrentScope][tmpLineSplit[1]][tmpLineSplit[0]]+']');
-					pFable.Stricture.Authorization[pFable.DDLParserState.CurrentScope][tmpLineSplit[1]][tmpLineSplit[0]] = tmpLineSplit[2];
+					if (typeof(pFable.Stricture.Authorization[pFable.DDLParserState.CurrentScope][tmpLineSplit[1]]) === 'undefined')
+					{
+						console.log('  > Custom authorizer line ignored: '+tmpLine);
+					}
+					else
+					{
+						console.log('  > Setting custom authorization for entity '+pFable.DDLParserState.CurrentScope+' - '+tmpLineSplit[1]+'.'+tmpLineSplit[0]+' => '+tmpLineSplit[2]+' [FROM '+pFable.Stricture.Authorization[pFable.DDLParserState.CurrentScope][tmpLineSplit[1]][tmpLineSplit[0]]+']');
+						pFable.Stricture.Authorization[pFable.DDLParserState.CurrentScope][tmpLineSplit[1]][tmpLineSplit[0]] = tmpLineSplit[2];
+					}
 				}
 			}
 			else if (pFable.DDLParserState.StanzaType == 'TableSchema')

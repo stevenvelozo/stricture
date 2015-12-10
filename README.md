@@ -1,7 +1,7 @@
 Stricture
 ===
 
-A basic data description language, inspired by Markdown.  Database engine, programming language and philosophically agnostic.
+A basic, slightly opionated data description language, inspired by Markdown.  Database engine, programming language and philosophically agnostic.
 
 Why, you ask?  Because it felt wrong allowing some application framework to define the database structure for data models.  This simple spec can quickly spool up a data store in multiple engines, documentation and starting source code for your framework du jour.
 
@@ -226,6 +226,89 @@ Which generates some MySQL create statements in the file 'build/Stricture_Output
             CustomerTypeID INT NOT NULL DEFAULT '0'
         );
 
+### Special Columns
+
+The retold framework as a whole has a few concepts for each record, which provide convenience features for developers.  These are meant to maintain basic record audit tracking.
+
+##### Create Tracking
+
+By including either of these fields, queries will automatically stamp the user ID and create date for the record.  If they are not in your schema, nothing happens.
+
+```
+&CreateDate
+#CreatingIDUser -> IDUser
+```
+
+##### Modification Tracking
+
+By including either of these fields, queries will automatically stamp the user ID and update date for any change to the record.  If they are not in your schema, nothing happens.
+
+```
+&UpdateDate
+#UpdatingIDUser -> IDUser
+```
+
+
+##### Deleted Bit
+
+The deleted bit means that meadow delete operations will not actually delete the record, just flip this to true.
+
+```
+^Deleted
+```
+
+
+##### Delete Tracking
+
+By including either of these fields, queries will automatically stamp the user ID and update date for deletion of the record.  If they are not in your schema, nothing happens.
+
+```
+&DeleteDate
+#DeletingIDUser -> IDUser
+```
+
+
+##### Customer Security
+
+If a record includes the `IDCustomer` field, it is elligible for being authorized with the `MyCustomer` authorizer.  This is handy for multi-tennant applications, where tenancy is desired for most record types by default.
+
+
+
 ### Meadow Schema Files
 
     You can also generate meadow schema files!  Just run stricture with the 'Meadow' command.
+
+### Meadow Authorizers
+
+Meadow has the capability of authorizing endpoints through built-in authorize functions, or having mix-in functions added later.  These authorizers are based on hashes.  By using an extended stricture stanza, you can define specific authorizers for endpoint/user combinations.
+
+The roles available to meadow endpoints are:
+
+- *Role 0*: Unauthenticated
+- *Role 1*: User
+- *Role 2*: Manager
+- *Role 3*: Director
+- *Role 4*: Executive
+- *Role 5*: Administrator
+
+The built-in authorizers include:
+
+1. *Allow* - no matter what, allow the operation
+2. *Deny* - no matter what, deny the operation
+3. *Mine* - only allow me to interact with my records
+4. *MyCustomer* - only allow me to interact with records that are my customer
+
+A basic example of this might be controlling access to the inventory table:
+
+```
+
+[Authorization Inventory]
+Read User Mine
+Read Manager MyCustomer
+Read Executive Deny
+Read Administrator Allow
+```
+
+This will setup the security authorizers to allow Administrators to `Read` all inventory, Managers to only `Read` inventory for their customerID and Users to `Read` only inventory they have created.  As a bonus, pesky executives cannot `Read` anything.
+
+You can also comma separate authorizers, and multiple will run.  Or even add your own hashes -- just make sure you also inject that authorizer into the meadow endpoint object.
