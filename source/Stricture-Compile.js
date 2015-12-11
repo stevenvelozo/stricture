@@ -38,10 +38,10 @@ var ReadMicroDDLFile = function(pFable, pFileName, fComplete)
 			pFable.Stricture.Tables[pScopeHash] = { TableName:pScopeHash, Columns:[] };
 			pFable.Stricture.TablesSequence.push(pScopeHash);
 
-			pFable.Stricture.Endpoints = libUnderscore.extend({}, _DefaultAPIDefinitions);
-			pFable.Stricture.Authorization[pScopeHash] = libUnderscore.extend({}, _DefaultAPISecurity);
-
-			pFable.Stricture.Pict[pScopeHash] = libUnderscore.extend({}, _DefaultPict);
+			// Because these objects are all just key/value pairs and no functions/circular references, this is a safe and clean way to make unique copies.
+			pFable.Stricture.Endpoints = JSON.parse(JSON.stringify(_DefaultAPIDefinitions));
+			pFable.Stricture.Authorization[pScopeHash] = JSON.parse(JSON.stringify(_DefaultAPISecurity));
+			pFable.Stricture.Pict[pScopeHash] = JSON.parse(JSON.stringify(_DefaultPict));
 		}
 	};
 
@@ -129,6 +129,7 @@ var ReadMicroDDLFile = function(pFable, pFileName, fComplete)
 						console.log('  > Setting custom authorization for entity '+pFable.DDLParserState.CurrentScope+' - '+tmpLineSplit[1]+'.'+tmpLineSplit[0]+' => '+tmpLineSplit[2]+' [FROM '+pFable.Stricture.Authorization[pFable.DDLParserState.CurrentScope][tmpLineSplit[1]][tmpLineSplit[0]]+']');
 						pFable.Stricture.Authorization[pFable.DDLParserState.CurrentScope][tmpLineSplit[1]][tmpLineSplit[0]] = tmpLineSplit[2];
 					}
+					//console.log(JSON.stringify(pFable.Stricture.Authorization, null, 5));
 				}
 			}
 			else if (pFable.DDLParserState.StanzaType == 'TableSchema')
