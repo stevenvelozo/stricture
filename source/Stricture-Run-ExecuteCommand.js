@@ -43,12 +43,12 @@ var runCommand = function(pFable)
 			require('./Stricture-Compile.js')(pFable);
 			break;
 
-		// Generate the LaTeX Data Dictionary in ../../Documentation/Headlight/DataModel/
+		// Generate the LaTeX Data Dictionary
 		case 'DataDictionary':
 			executeModelCommand('./Stricture-Generate-LaTeX.js', pFable);
 			break;
 
-		// Generate the LaTeX Data Dictionary in ../../Documentation/Headlight/DataModel/
+		// Generate the MarkDown Data Dictionary
 		case 'Documentation':
 			executeModelCommand('./Stricture-Generate-Markdown.js', pFable);
 			break;

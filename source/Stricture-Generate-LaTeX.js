@@ -15,7 +15,7 @@ var libFS = require('fs');
  {
 	var tmpLaTeXFolder = pFable.settings.OutputLocation;
 	var tmpTableFile = tmpLaTeXFolder+pFable.settings.OutputFileName+'-Tables.tex';
-	var tmpChangeTrackingFile = tmpLaTeXFolder+pFable.settings.OutputFileName+'Headlight-ChangeTracking.tex';
+	var tmpChangeTrackingFile = tmpLaTeXFolder+pFable.settings.OutputFileName+'-ChangeTracking.tex';
 
 	console.log('--> Building the data model file...');
 	console.log('  > Raw Tables');
