@@ -4,9 +4,11 @@
 * @author <steven@velozo.com>
 */
 var libFS = require('fs');
+var libPath = require('path');
 var libLineReader = require('line-by-line');
 var libJSONFile = require('jsonfile');
 var libUnderscore = require('underscore');
+var libAsync = require('async');
 
 /**
 * Stricture MicroDDL Compiler
@@ -29,6 +31,8 @@ var ReadMicroDDLFile = function(pFable, pFileName, fComplete)
 		CurrentScope: 'None',
 		StanzaType: 'None'
 	});
+
+	var tmpIncludeFiles = [];
 
 	// Add a scope if it doesn't exist
 	var InitializeScope = function(pScopeHash, pFable)
@@ -97,6 +101,16 @@ var ReadMicroDDLFile = function(pFable, pFileName, fComplete)
 
 					console.log('  > Line #'+pFable.DDLParserState.LineCount+' begins authorizor stanza: '+pFable.DDLParserState.CurrentScope);
 
+				}
+				// Check for an include file
+				else if ((tmpLineSplit[0] === '[Include') && (tmpLine.charAt(tmpLine.length-1) === ']'))
+				{
+					// This is not a stanza, it just forks off another read midflow
+					var tmpIncludeFile = tmpLineSplit[1].substring(0, tmpLineSplit[1].length-1);
+					console.log('  > Line #'+pFable.DDLParserState.LineCount+' references include stanza: '+tmpIncludeFile);
+					var tmpIncludeFilePath = libPath.dirname(pFileName)+'/'+tmpIncludeFile;
+					console.log('  > Adding file '+libPath.dirname(pFileName)+'/'+tmpIncludeFile+' to includes.');
+					tmpIncludeFiles.push(tmpIncludeFilePath);
 				}
 				else
 				{
@@ -273,7 +287,21 @@ var ReadMicroDDLFile = function(pFable, pFileName, fComplete)
 		function ()
 		{
 			console.log('  > Compilation complete for '+pFileName);
-			fComplete();
+			if (tmpIncludeFiles.length > 0)
+			{
+				console.log('>>> Processing '+tmpIncludeFiles.length+' include files');
+				libAsync.eachSeries(tmpIncludeFiles, 
+					function(pIncludeFile, fCallback)
+					{
+						console.log('--> Processing '+pIncludeFile+' include file');
+						ReadMicroDDLFile(pFable, pIncludeFile, fCallback);
+					},
+					fComplete);
+			}
+			else
+			{
+				fComplete();
+			}
 		}
 	);
 };
