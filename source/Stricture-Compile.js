@@ -102,6 +102,17 @@ var ReadMicroDDLFile = function(pFable, pFileName, fComplete)
 					console.log('  > Line #'+pFable.DDLParserState.LineCount+' begins authorizor stanza: '+pFable.DDLParserState.CurrentScope);
 
 				}
+				else if ((tmpLineSplit[0] === '[PICT-List') && (tmpLine.charAt(tmpLine.length-1) === ']'))
+				{
+					pFable.DDLParserState.StanzaType = 'ExtendedStanza-Pict-List';
+
+					pFable.DDLParserState.CurrentScope = tmpLineSplit[1].substring(0, tmpLineSplit[1].length-1);
+					// Add the table to the model if it doesn't exist.
+					InitializeScope(pFable.DDLParserState.CurrentScope, pFable);
+
+					console.log('  > Line #'+pFable.DDLParserState.LineCount+' begins authorizor stanza: '+pFable.DDLParserState.CurrentScope);
+
+				}
 				// Check for an include file
 				else if ((tmpLineSplit[0] === '[Include') && (tmpLine.charAt(tmpLine.length-1) === ']'))
 				{
@@ -115,7 +126,7 @@ var ReadMicroDDLFile = function(pFable, pFileName, fComplete)
 				else
 				{
 					// We are ignoring all lines that aren't in table stanzas
-					if (tmpLine !== '')
+					if ((tmpLine.charAt(0) === '!'))
 					{
 						// Tell the user that they typed something that was ignored.
 						console.error('  > Compiler ignoring line #'+pFable.DDLParserState.LineCount+' because it is not within a table stanza.');
@@ -145,6 +156,76 @@ var ReadMicroDDLFile = function(pFable, pFileName, fComplete)
 					}
 					//console.log(JSON.stringify(pFable.Stricture.Authorization, null, 5));
 				}
+			}
+			else if (pFable.DDLParserState.StanzaType == 'ExtendedStanza-Pict-List')
+			{
+				// Now assign the pict list data.
+				// The character at index 0 defines the line type
+				//var tmpLineTypeCharacter = tmpLine.charAt(0);
+				//if (tmpLineType === '#')
+				//{
+				//	console.log('  > Pict List definition line ignored: '+tmpLine);
+				//}
+				//else
+				//{
+					var tmpEntry = {
+						Column: tmpLineSplit[0]
+					};
+
+					var tmpKey = '';
+					var tmpValue = '';
+
+					var tmpToken = 0;
+					var tmpPrefix = true;    // Used to determine if we are before or after the :
+					var tmpInQuotes = false; // Used to track the state of if we are quoted or not.
+					// Parse the extra columns
+					for (var i = 0; i < tmpLine.length; i++)
+					{
+						// Walk each character.  Yes this is a horrible parsing technique.  Yes it works for now.
+						var tmpCharacter = tmpLine.charAt(i);
+						//console.log(' > Parsing character '+tmpCharacter)
+
+						if (!tmpInQuotes && (tmpCharacter === ' '))
+						{
+							//console.log(' > TOKEN ['+tmpToken+']: '+tmpKey+' => '+tmpValue)
+							if ((tmpToken > 0) && (tmpKey != ''))
+							{
+								tmpEntry[tmpKey] = tmpValue;
+							}
+							tmpToken++;
+
+							tmpKey = '';
+							tmpValue = '';
+							tmpPrefix = true;
+						}
+						else if (tmpCharacter === '"')
+						{
+							// Ignore quotes.
+							tmpInQuotes = !tmpInQuotes;
+						}
+						else if (tmpPrefix && (tmpCharacter === ':'))
+						{
+							tmpPrefix = false;
+						}
+						else if (tmpPrefix)
+						{
+							tmpKey += tmpCharacter;
+						}
+						else
+						{
+							tmpValue += tmpCharacter;
+						}
+					}
+					if ((tmpToken > 0) && (tmpKey != ''))
+					{
+						tmpEntry[tmpKey] = tmpValue;
+					}
+
+					console.log('  > Adding Pict List entry for entity '+pFable.DDLParserState.CurrentScope+' '+JSON.stringify(tmpEntry));
+
+					pFable.Stricture.Pict[pFable.DDLParserState.CurrentScope].List.Columns.push(tmpEntry);
+				//}
+				//console.log(JSON.stringify(pFable.Stricture.Authorization, null, 5));
 			}
 			else if (pFable.DDLParserState.StanzaType == 'TableSchema')
 			{
@@ -314,6 +395,7 @@ var ReadMicroDDLFile = function(pFable, pFileName, fComplete)
  {
 	var tmpStrictureModelFile = pFable.settings.OutputLocation+pFable.settings.OutputFileName+'.json';
 	var tmpStrictureModelExtendedFile = pFable.settings.OutputLocation+pFable.settings.OutputFileName+'-Extended.json';
+	var tmpStrictureModelPICTFile = pFable.settings.OutputLocation+pFable.settings.OutputFileName+'-PICT.json';
 
 	pFable.Stricture = (
 		{
@@ -365,6 +447,24 @@ var ReadMicroDDLFile = function(pFable, pFileName, fComplete)
 			console.info('  > Compiling the Extended Model');
 			libJSONFile.writeFile(tmpStrictureModelExtendedFile,
 				pFable.Stricture,
+				{spaces: 4},
+				function(pError) 
+				{
+					if (pError)
+					{
+						console.error('  > Error writing out model JSON: '+pError);
+					}
+					else
+					{
+						console.info('  > Extended Model JSON Successfully Written');				
+					}
+				}
+			);
+
+			// Generate the output
+			console.info('  > Compiling the PICT Definition');
+			libJSONFile.writeFile(tmpStrictureModelPICTFile,
+				pFable.Stricture.Pict,
 				{spaces: 4},
 				function(pError) 
 				{

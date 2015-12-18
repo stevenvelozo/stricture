@@ -1,0 +1,48 @@
+!User
+@IDUser
+$UserName
+$PasswordHash 42
+$FirstName 38
+$LastName 38
+$Email 60
+
+!Address
+@IDAddress
+#CreatingIDUser -> IDUser
+&Created
+$Name 90
+$Email 60
+$Address 130
+$City 48
+$State 24
+$Zip 10
+$Phone 12
+
+[Authorization Contact]
+Read User Deny
+Reads User Deny
+Create User Allow
+Read Manager Mine
+Reads Manager Mine
+Create Manager Allow
+
+[PICT-List Address]
+Name
+Email
+Address HideAt:md
+City HideAt:sm
+State HideAt:xs
+CreatingIDUser Type:LinkedRecord Record:User Field:FirstName FieldExtra:LastName
+Created Type:RelativeDateTime
+
+[PICT-Record Contact]
+#Person
+Name
+#Address
+Address
+City
+State
+Zip
+#Contact
+Email Title:"Email Address"
+Phone

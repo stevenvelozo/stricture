@@ -16,33 +16,17 @@ module.exports = (
 				Title: 'Create a <%= EntityName %>'
 			}),
 
-		Read: (
+		Record: (
 			{
 				Enabled: true,
-				Columns:
-				{
-					Name: { Type: 'Text' }
-				}
+				Columns: []
 			}),
 
-		ReadList: (
+		List: (
 			{
 				Enabled: true,
-				Columns:
-				{
-					Name: { Type: 'Text' },
-					CreateDate: { Type: 'Date-Relative' }
-				}
-			}),
-
-
-		Update: (
-			{
-				Enabled: true,
-				Columns:
-				{
-					Name: { Type: 'Text' }
-				}
+				RowMenu: true,
+				Columns: []
 			}),
 
 		Delete: (
