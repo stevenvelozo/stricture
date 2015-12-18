@@ -142,6 +142,11 @@ var ReadMicroDDLFile = function(pFable, pFileName, fComplete)
 
 					pFable.DDLParserState.TableCount++;
 				}
+				// Check for a comment
+				if (tmpLine.charAt(0) === '/')
+				{
+					// Skip comments
+				}
 				// Check for an extended stanza
 				else if ((tmpLineSplit[0] === '[Authorization') && (tmpLine.charAt(tmpLine.length-1) === ']'))
 				{

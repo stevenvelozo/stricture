@@ -1,3 +1,4 @@
+// Comments are a single line.
 !User
 @IDUser
 $UserName
@@ -26,6 +27,7 @@ Read Manager Mine
 Reads Manager Mine
 Create Manager Allow
 
+// This is a comment
 [PICT-List Address]
 Name
 Email
