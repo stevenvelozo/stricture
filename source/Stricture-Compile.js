@@ -49,6 +49,58 @@ var ReadMicroDDLFile = function(pFable, pFileName, fComplete)
 		}
 	};
 
+	var ParseComplexProperties = function(pLine, pEntries)
+	{
+		var tmpKey = '';
+		var tmpValue = '';
+
+		var tmpToken = 0;
+		var tmpPrefix = true;    // Used to determine if we are before or after the :
+		var tmpInQuotes = false; // Used to track the state of if we are quoted or not.
+		// Parse the extra columns
+		for (var i = 0; i < pLine.length; i++)
+		{
+			// Walk each character.  Yes this is a horrible parsing technique.  Yes it works for now.
+			var tmpCharacter = pLine.charAt(i);
+			//console.log(' > Parsing character '+tmpCharacter)
+
+			if (!tmpInQuotes && (tmpCharacter === ' '))
+			{
+				//console.log(' > TOKEN ['+tmpToken+']: '+tmpKey+' => '+tmpValue)
+				if ((tmpToken > 0) && (tmpKey != ''))
+				{
+					pEntries[tmpKey] = tmpValue;
+				}
+				tmpToken++;
+
+				tmpKey = '';
+				tmpValue = '';
+				tmpPrefix = true;
+			}
+			else if (tmpCharacter === '"')
+			{
+				// Ignore quotes.
+				tmpInQuotes = !tmpInQuotes;
+			}
+			else if (tmpPrefix && (tmpCharacter === ':'))
+			{
+				tmpPrefix = false;
+			}
+			else if (tmpPrefix)
+			{
+				tmpKey += tmpCharacter;
+			}
+			else
+			{
+				tmpValue += tmpCharacter;
+			}
+		}
+		if ((tmpToken > 0) && (tmpKey != ''))
+		{
+			pEntries[tmpKey] = tmpValue;
+		}
+	};
+
 	// Parse the file line-by-line
 	var tmpLineReader = new libLineReader(pFileName);
 
@@ -110,7 +162,18 @@ var ReadMicroDDLFile = function(pFable, pFileName, fComplete)
 					// Add the table to the model if it doesn't exist.
 					InitializeScope(pFable.DDLParserState.CurrentScope, pFable);
 
-					console.log('  > Line #'+pFable.DDLParserState.LineCount+' begins authorizor stanza: '+pFable.DDLParserState.CurrentScope);
+					console.log('  > Line #'+pFable.DDLParserState.LineCount+' begins PICT List stanza: '+pFable.DDLParserState.CurrentScope);
+
+				}
+				else if ((tmpLineSplit[0] === '[PICT-Record') && (tmpLine.charAt(tmpLine.length-1) === ']'))
+				{
+					pFable.DDLParserState.StanzaType = 'ExtendedStanza-Pict-Record';
+
+					pFable.DDLParserState.CurrentScope = tmpLineSplit[1].substring(0, tmpLineSplit[1].length-1);
+					// Add the table to the model if it doesn't exist.
+					InitializeScope(pFable.DDLParserState.CurrentScope, pFable);
+
+					console.log('  > Line #'+pFable.DDLParserState.LineCount+' begins PICT Record stanza: '+pFable.DDLParserState.CurrentScope);
 
 				}
 				// Check for an include file
@@ -160,72 +223,39 @@ var ReadMicroDDLFile = function(pFable, pFileName, fComplete)
 			else if (pFable.DDLParserState.StanzaType == 'ExtendedStanza-Pict-List')
 			{
 				// Now assign the pict list data.
+				var tmpEntry = {
+					Column: tmpLineSplit[0]
+				};
+
+				ParseComplexProperties(tmpLine, tmpEntry);
+
+				console.log('  > Adding Pict List entry for entity '+pFable.DDLParserState.CurrentScope+' '+JSON.stringify(tmpEntry));
+
+				pFable.Stricture.Pict[pFable.DDLParserState.CurrentScope].List.Columns.push(tmpEntry);
+			}
+			else if (pFable.DDLParserState.StanzaType == 'ExtendedStanza-Pict-Record')
+			{
+				// Now assign the pict list data.
 				// The character at index 0 defines the line type
-				//var tmpLineTypeCharacter = tmpLine.charAt(0);
-				//if (tmpLineType === '#')
-				//{
-				//	console.log('  > Pict List definition line ignored: '+tmpLine);
-				//}
-				//else
-				//{
+				var tmpLineTypeCharacter = tmpLine.charAt(0);
+				if (tmpLineTypeCharacter === '#')
+				{
+					console.log('  > Adding Pict Record Section Heading Definition: '+tmpLine);
+					var tmpEntry = {Column:tmpLine.substring(1), Type:'SectionHeading'};
+					pFable.Stricture.Pict[pFable.DDLParserState.CurrentScope].Record.Columns.push(tmpEntry);
+				}
+				else
+				{
 					var tmpEntry = {
 						Column: tmpLineSplit[0]
 					};
 
-					var tmpKey = '';
-					var tmpValue = '';
+					ParseComplexProperties(tmpLine, tmpEntry);
 
-					var tmpToken = 0;
-					var tmpPrefix = true;    // Used to determine if we are before or after the :
-					var tmpInQuotes = false; // Used to track the state of if we are quoted or not.
-					// Parse the extra columns
-					for (var i = 0; i < tmpLine.length; i++)
-					{
-						// Walk each character.  Yes this is a horrible parsing technique.  Yes it works for now.
-						var tmpCharacter = tmpLine.charAt(i);
-						//console.log(' > Parsing character '+tmpCharacter)
+					console.log('  > Adding Pict Record column for entity '+pFable.DDLParserState.CurrentScope+' '+JSON.stringify(tmpEntry));
 
-						if (!tmpInQuotes && (tmpCharacter === ' '))
-						{
-							//console.log(' > TOKEN ['+tmpToken+']: '+tmpKey+' => '+tmpValue)
-							if ((tmpToken > 0) && (tmpKey != ''))
-							{
-								tmpEntry[tmpKey] = tmpValue;
-							}
-							tmpToken++;
-
-							tmpKey = '';
-							tmpValue = '';
-							tmpPrefix = true;
-						}
-						else if (tmpCharacter === '"')
-						{
-							// Ignore quotes.
-							tmpInQuotes = !tmpInQuotes;
-						}
-						else if (tmpPrefix && (tmpCharacter === ':'))
-						{
-							tmpPrefix = false;
-						}
-						else if (tmpPrefix)
-						{
-							tmpKey += tmpCharacter;
-						}
-						else
-						{
-							tmpValue += tmpCharacter;
-						}
-					}
-					if ((tmpToken > 0) && (tmpKey != ''))
-					{
-						tmpEntry[tmpKey] = tmpValue;
-					}
-
-					console.log('  > Adding Pict List entry for entity '+pFable.DDLParserState.CurrentScope+' '+JSON.stringify(tmpEntry));
-
-					pFable.Stricture.Pict[pFable.DDLParserState.CurrentScope].List.Columns.push(tmpEntry);
-				//}
-				//console.log(JSON.stringify(pFable.Stricture.Authorization, null, 5));
+					pFable.Stricture.Pict[pFable.DDLParserState.CurrentScope].Record.Columns.push(tmpEntry);
+				}
 			}
 			else if (pFable.DDLParserState.StanzaType == 'TableSchema')
 			{
