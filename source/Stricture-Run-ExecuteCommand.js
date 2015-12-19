@@ -72,12 +72,12 @@ var runCommand = function(pFable)
 			executeModelCommand('./Stricture-Generate-MySQL.js', pFable);
 			break;
 
-		// Generate Meadow Model Descriptions
-		case 'Meadow':
-			executeModelCommand('./Stricture-Generate-Meadow.js', pFable);
+		// Generate MySQL Migrate
+		case 'MySQL-Migrate':
+			executeModelCommand('./Stricture-Generate-MySQL-Migrate.js', pFable);
 			break;
 
-		// Generate Pict Model Descriptions
+		// Generate Meadow Model Descriptions
 		case 'Meadow':
 			executeModelCommand('./Stricture-Generate-Meadow.js', pFable);
 			break;

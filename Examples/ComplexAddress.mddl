@@ -19,6 +19,10 @@ $State 24
 $Zip 10
 $Phone 12
 
+!Contact
+@IDContact
+$Name
+
 [Authorization Contact]
 Read User Deny
 Reads User Deny
