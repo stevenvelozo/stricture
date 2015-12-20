@@ -112,50 +112,50 @@ FROM
 				case 'ID':
 					libFS.appendFileSync(tmpMySQLFile, "        -- INT UNSIGNED NOT NULL AUTO_INCREMENT\n");
 					libFS.appendFileSync(tmpMySQLFile, "        "+pFable.Model.Tables[tmpTable].Columns[j].Column);
-					tmpFromQuery += "        -- INT UNSIGNED NOT NULL AUTO_INCREMENT\n";
+					tmpFromQuery += "        -- {" + pFable.Model.Tables[tmpTable].Columns[j].Column + "} INT UNSIGNED NOT NULL AUTO_INCREMENT\n";
 					tmpFromQuery += "        TABLE_FROM."+pFable.Model.Tables[tmpTable].Columns[j].Column;
 					tmpPrimaryKey = pFable.Model.Tables[tmpTable].Columns[j].Column;
 					break;
 				case 'GUID':
 					libFS.appendFileSync(tmpMySQLFile, "        -- CHAR(36) NOT NULL DEFAULT '00000000-0000-0000-0000-000000000000'\n");
 					libFS.appendFileSync(tmpMySQLFile, "        "+pFable.Model.Tables[tmpTable].Columns[j].Column);
-					tmpFromQuery += "        -- CHAR(36) NOT NULL DEFAULT '00000000-0000-0000-0000-000000000000'\n";
+					tmpFromQuery += "        -- {" + pFable.Model.Tables[tmpTable].Columns[j].Column + "} CHAR(36) NOT NULL DEFAULT '00000000-0000-0000-0000-000000000000'\n";
 					tmpFromQuery += "        TABLE_FROM."+pFable.Model.Tables[tmpTable].Columns[j].Column;
 					break;
 				case 'Numeric':
 					libFS.appendFileSync(tmpMySQLFile, "        -- INT NOT NULL DEFAULT '0'\n");
 					libFS.appendFileSync(tmpMySQLFile, "        "+pFable.Model.Tables[tmpTable].Columns[j].Column);
-					tmpFromQuery += "        -- INT NOT NULL DEFAULT '0'\n";
+					tmpFromQuery += "        -- {" + pFable.Model.Tables[tmpTable].Columns[j].Column + "} INT NOT NULL DEFAULT '0'\n";
 					tmpFromQuery += "        TABLE_FROM."+pFable.Model.Tables[tmpTable].Columns[j].Column;
 					break;
 				case 'Decimal':
 					libFS.appendFileSync(tmpMySQLFile, "        -- DECIMAL("+pFable.Model.Tables[tmpTable].Columns[j].Size+")\n");
 					libFS.appendFileSync(tmpMySQLFile, "        "+pFable.Model.Tables[tmpTable].Columns[j].Column);
-					tmpFromQuery += "        -- DECIMAL("+pFable.Model.Tables[tmpTable].Columns[j].Size+")\n";
+					tmpFromQuery += "        -- {" + pFable.Model.Tables[tmpTable].Columns[j].Column + "} DECIMAL("+pFable.Model.Tables[tmpTable].Columns[j].Size+")\n";
 					tmpFromQuery += "        TABLE_FROM."+pFable.Model.Tables[tmpTable].Columns[j].Column;
 					break;
 				case 'String':
 					libFS.appendFileSync(tmpMySQLFile, "        -- CHAR("+pFable.Model.Tables[tmpTable].Columns[j].Size+") NOT NULL DEFAULT ''\n");
 					libFS.appendFileSync(tmpMySQLFile, "        "+pFable.Model.Tables[tmpTable].Columns[j].Column);
-					tmpFromQuery += "        -- CHAR("+pFable.Model.Tables[tmpTable].Columns[j].Size+") NOT NULL DEFAULT ''\n";
+					tmpFromQuery += "        -- {" + pFable.Model.Tables[tmpTable].Columns[j].Column + "} CHAR("+pFable.Model.Tables[tmpTable].Columns[j].Size+") NOT NULL DEFAULT ''\n";
 					tmpFromQuery += "        TABLE_FROM."+pFable.Model.Tables[tmpTable].Columns[j].Column;
 					break;
 				case 'Text':
 					libFS.appendFileSync(tmpMySQLFile, "        -- TEXT\n");
 					libFS.appendFileSync(tmpMySQLFile, "        "+pFable.Model.Tables[tmpTable].Columns[j].Column);
-					tmpFromQuery += "        -- TEXT\n";
+					tmpFromQuery += "        -- {" + pFable.Model.Tables[tmpTable].Columns[j].Column + "} TEXT\n";
 					tmpFromQuery += "        TABLE_FROM."+pFable.Model.Tables[tmpTable].Columns[j].Column;
 					break;
 				case 'DateTime':
 					libFS.appendFileSync(tmpMySQLFile, "        -- DATETIME\n");
 					libFS.appendFileSync(tmpMySQLFile, "        "+pFable.Model.Tables[tmpTable].Columns[j].Column);
-					tmpFromQuery += "        -- DATETIME\n";
+					tmpFromQuery += "        -- {" + pFable.Model.Tables[tmpTable].Columns[j].Column + "} DATETIME\n";
 					tmpFromQuery += "        TABLE_FROM."+pFable.Model.Tables[tmpTable].Columns[j].Column;
 					break;
 				case 'Boolean':
 					libFS.appendFileSync(tmpMySQLFile, "        -- TINYINT NOT NULL DEFAULT '0'\n");
 					libFS.appendFileSync(tmpMySQLFile, "        "+pFable.Model.Tables[tmpTable].Columns[j].Column);
-					tmpFromQuery += "        -- TINYINT NOT NULL DEFAULT '0'\n";
+					tmpFromQuery += "        -- {" + pFable.Model.Tables[tmpTable].Columns[j].Column + "} TINYINT NOT NULL DEFAULT '0'\n";
 					tmpFromQuery += "        TABLE_FROM."+pFable.Model.Tables[tmpTable].Columns[j].Column;
 					break;
 				default:
