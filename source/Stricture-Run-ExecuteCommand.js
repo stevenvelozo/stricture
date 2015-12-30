@@ -48,6 +48,11 @@ var runCommand = function(pFable)
 			executeModelCommand('./Stricture-Generate-LaTeX.js', pFable);
 			break;
 
+		// Generate the LaTeX Data Dictionary
+		case 'DictionaryCSV':
+			executeModelCommand('./Stricture-Generate-DictionaryCSV.js', pFable);
+			break;
+
 		// Generate the MarkDown Data Dictionary
 		case 'Documentation':
 			executeModelCommand('./Stricture-Generate-Markdown.js', pFable);
