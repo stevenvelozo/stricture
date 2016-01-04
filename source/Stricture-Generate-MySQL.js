@@ -27,7 +27,7 @@ var libFS = require('fs');
 		Links TEXT,
 		KEY URI (TermURI),
 		PRIMARY KEY (IDTerms)
-	);
+	) DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
  *****/
  var GenerateMySQLCreation = function(pFable)
  {
@@ -93,7 +93,7 @@ var libFS = require('fs');
 		}
 		if (tmpPrimaryKey)
 			libFS.appendFileSync(tmpMySQLFile, ",\n\n        PRIMARY KEY ("+tmpPrimaryKey+")");
-		libFS.appendFileSync(tmpMySQLFile, "\n    );\n");
+		libFS.appendFileSync(tmpMySQLFile, "\n    ) DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;\n");
 	}
 };
 
