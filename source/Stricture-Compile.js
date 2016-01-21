@@ -212,8 +212,21 @@ var ReadMicroDDLFile = function(pFable, pFileName, fComplete)
 				else
 				{
 					// Now assign the authorizer.
+					if (tmpLineSplit[1] === '*')
+					{
+						console.log('  > Setting custom authorization for entity '+pFable.DDLParserState.CurrentScope+' - wildcard role definition for', tmpLineSplit[0] + ':');
+
+						for(var roleKey in pFable.Stricture.Authorization[pFable.DDLParserState.CurrentScope])
+						{
+							if (roleKey !== '__DefaultAPISecurity')
+							{
+								console.log('  > Setting custom authorization for entity '+pFable.DDLParserState.CurrentScope+' - '+roleKey+'.'+tmpLineSplit[0]+' => '+tmpLineSplit[2]+' [FROM '+pFable.Stricture.Authorization[pFable.DDLParserState.CurrentScope][roleKey][tmpLineSplit[0]]+']');
+								pFable.Stricture.Authorization[pFable.DDLParserState.CurrentScope][roleKey][tmpLineSplit[0]] = tmpLineSplit[2];
+							}
+						}
+					}
 					// TODO: Deal with lists (arrays?  commas?  slashes?  ... pipes?)
-					if (typeof(pFable.Stricture.Authorization[pFable.DDLParserState.CurrentScope][tmpLineSplit[1]]) === 'undefined')
+					else if (typeof(pFable.Stricture.Authorization[pFable.DDLParserState.CurrentScope][tmpLineSplit[1]]) === 'undefined')
 					{
 						console.log('  > Custom authorizer line ignored: '+tmpLine);
 					}
