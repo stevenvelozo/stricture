@@ -35,9 +35,12 @@ var ReadMicroDDLFile = function(pFable, pFileName, fComplete)
 	var tmpIncludeFiles = [];
 
 	// Add a scope if it doesn't exist
-	var InitializeScope = function(pScopeHash, pFable)
+	var InitializeScope = function(pScopeHash, pFable, pGenerateTables)
 	{
-		if (!pFable.Stricture.Tables.hasOwnProperty(pScopeHash))
+		// Allow the user to pass in virtual scopes, that are only used for pict
+		var tmpGenerateTables = (typeof(pGenerateTables) === 'undefined') ? true : pGenerateTables;
+
+		if (!pFable.Stricture.Tables.hasOwnProperty(pScopeHash) && tmpGenerateTables)
 		{
 			pFable.Stricture.Tables[pScopeHash] = { TableName:pScopeHash, Columns:[] };
 			pFable.Stricture.TablesSequence.push(pScopeHash);
@@ -45,6 +48,10 @@ var ReadMicroDDLFile = function(pFable, pFileName, fComplete)
 			// Because these objects are all just key/value pairs and no functions/circular references, this is a safe and clean way to make unique copies.
 			pFable.Stricture.Endpoints = JSON.parse(JSON.stringify(_DefaultAPIDefinitions));
 			pFable.Stricture.Authorization[pScopeHash] = JSON.parse(JSON.stringify(_DefaultAPISecurity));
+		}
+
+		if (!pFable.Stricture.Pict.hasOwnProperty(pScopeHash))
+		{
 			pFable.Stricture.Pict[pScopeHash] = JSON.parse(JSON.stringify(_DefaultPict));
 		}
 	};
@@ -170,6 +177,17 @@ var ReadMicroDDLFile = function(pFable, pFileName, fComplete)
 					console.log('  > Line #'+pFable.DDLParserState.LineCount+' begins PICT List stanza: '+pFable.DDLParserState.CurrentScope);
 
 				}
+				else if ((tmpLineSplit[0] === '[PICT-List-Virtual') && (tmpLine.charAt(tmpLine.length-1) === ']'))
+				{
+					pFable.DDLParserState.StanzaType = 'ExtendedStanza-Pict-List';
+
+					pFable.DDLParserState.CurrentScope = tmpLineSplit[1].substring(0, tmpLineSplit[1].length-1);
+					// Add the table to the model if it doesn't exist.
+					InitializeScope(pFable.DDLParserState.CurrentScope, pFable, false);
+
+					console.log('  > Line #'+pFable.DDLParserState.LineCount+' begins PICT Virtual List stanza: '+pFable.DDLParserState.CurrentScope);
+
+				}
 				else if ((tmpLineSplit[0] === '[PICT-Record') && (tmpLine.charAt(tmpLine.length-1) === ']'))
 				{
 					pFable.DDLParserState.StanzaType = 'ExtendedStanza-Pict-Record';
@@ -179,6 +197,17 @@ var ReadMicroDDLFile = function(pFable, pFileName, fComplete)
 					InitializeScope(pFable.DDLParserState.CurrentScope, pFable);
 
 					console.log('  > Line #'+pFable.DDLParserState.LineCount+' begins PICT Record stanza: '+pFable.DDLParserState.CurrentScope);
+
+				}
+				else if ((tmpLineSplit[0] === '[PICT-Record-Virtual') && (tmpLine.charAt(tmpLine.length-1) === ']'))
+				{
+					pFable.DDLParserState.StanzaType = 'ExtendedStanza-Pict-Record';
+
+					pFable.DDLParserState.CurrentScope = tmpLineSplit[1].substring(0, tmpLineSplit[1].length-1);
+					// Add the table to the model if it doesn't exist.
+					InitializeScope(pFable.DDLParserState.CurrentScope, pFable, false);
+
+					console.log('  > Line #'+pFable.DDLParserState.LineCount+' begins PICT Virtual Record stanza: '+pFable.DDLParserState.CurrentScope);
 
 				}
 				// Check for an include file
