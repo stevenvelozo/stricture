@@ -552,7 +552,7 @@ var ReadMicroDDLFile = function(pFable, pFileName, fComplete)
 				{
 					if (pError)
 					{
-						console.error('  > Error writing out model JSON: '+pError);
+						console.error('  > Error writing out Extended model JSON: '+pError);
 					}
 					else
 					{
@@ -570,11 +570,11 @@ var ReadMicroDDLFile = function(pFable, pFileName, fComplete)
 				{
 					if (pError)
 					{
-						console.error('  > Error writing out model JSON: '+pError);
+						console.error('  > Error writing out PICT model JSON: '+pError);
 					}
 					else
 					{
-						console.info('  > Extended Model JSON Successfully Written');				
+						console.info('  > PICT JSON Successfully Written');				
 					}
 				}
 			);
