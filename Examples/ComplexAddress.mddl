@@ -31,8 +31,14 @@ Read Manager Mine
 Reads Manager Mine
 Create Manager Allow
 
+[PICT-List User]
+(List of Users)
+UserName
+Email
+
 // This is a comment
 [PICT-List Address]
+:Enabled=false
 Name
 Email
 Address HideAt:md
@@ -41,7 +47,11 @@ State HideAt:xs
 CreatingIDUser Type:LinkedRecord Record:User Field:FirstName FieldExtra:LastName
 Created Type:RelativeDateTime
 
+[PICT-Delete Address]
+:ConfirmationMessage = This is a stress test of <%= Record.City %>
+
 [PICT-Record Contact]
+(Contact <%= Name %>)
 #Person
 Name
 #Address
@@ -52,3 +62,10 @@ Zip
 #Contact
 Email Title:"Email Address"
 Phone
+
+[PICT-Update Contact]
+(Change this Contact with Name <%= Name %>)
+#Person
+Name
+#Address
+City Title:"City of Residence"

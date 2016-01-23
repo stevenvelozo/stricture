@@ -13,20 +13,30 @@ module.exports = (
 		Create: (
 			{
 				Enabled: true,
+				Columns: [],
 				Title: 'Create a <%= EntityName %>'
 			}),
 
 		Record: (
 			{
 				Enabled: true,
-				Columns: []
+				Columns: [],
+				Title: 'Read a <%= EntityName %>'
+			}),
+
+		Update: (
+			{
+				Enabled: true,
+				Columns: [],
+				Title: 'Update a <%= EntityName %>'
 			}),
 
 		List: (
 			{
 				Enabled: true,
 				RowMenu: true,
-				Columns: []
+				Columns: [],
+				Title: '<%= EntityName %>s'
 			}),
 
 		Delete: (
@@ -34,7 +44,9 @@ module.exports = (
 				Enabled: true,
 				Validation: true,
 				DisplayRecord: true,
-				ConfirmationMessage: 'Are you sure you want to delete this record with ID XXXXX?'
+				Columns:[],
+				ConfirmationMessage: 'Are you sure you want to delete this record with ID XXXXX?',
+				Title: 'Delete a <%= EntityName %>'
 			})
 	}
 );

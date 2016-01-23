@@ -35,12 +35,9 @@ var ReadMicroDDLFile = function(pFable, pFileName, fComplete)
 	var tmpIncludeFiles = [];
 
 	// Add a scope if it doesn't exist
-	var InitializeScope = function(pScopeHash, pFable, pGenerateTables)
+	var InitializeScope = function(pScopeHash, pFable)
 	{
-		// Allow the user to pass in virtual scopes, that are only used for pict
-		var tmpGenerateTables = (typeof(pGenerateTables) === 'undefined') ? true : pGenerateTables;
-
-		if (!pFable.Stricture.Tables.hasOwnProperty(pScopeHash) && tmpGenerateTables)
+		if (!pFable.Stricture.Tables.hasOwnProperty(pScopeHash))
 		{
 			pFable.Stricture.Tables[pScopeHash] = { TableName:pScopeHash, Columns:[] };
 			pFable.Stricture.TablesSequence.push(pScopeHash);
@@ -49,7 +46,10 @@ var ReadMicroDDLFile = function(pFable, pFileName, fComplete)
 			pFable.Stricture.Endpoints = JSON.parse(JSON.stringify(_DefaultAPIDefinitions));
 			pFable.Stricture.Authorization[pScopeHash] = JSON.parse(JSON.stringify(_DefaultAPISecurity));
 		}
+	};
 
+	var InitializePictScope = function(pScopeHash, pFable)
+	{
 		if (!pFable.Stricture.Pict.hasOwnProperty(pScopeHash))
 		{
 			pFable.Stricture.Pict[pScopeHash] = JSON.parse(JSON.stringify(_DefaultPict));
@@ -64,48 +64,78 @@ var ReadMicroDDLFile = function(pFable, pFileName, fComplete)
 		var tmpToken = 0;
 		var tmpPrefix = true;    // Used to determine if we are before or after the :
 		var tmpInQuotes = false; // Used to track the state of if we are quoted or not.
-		// Parse the extra columns
-		for (var i = 0; i < pLine.length; i++)
-		{
-			// Walk each character.  Yes this is a horrible parsing technique.  Yes it works for now.
-			var tmpCharacter = pLine.charAt(i);
-			//console.log(' > Parsing character '+tmpCharacter)
 
-			if (!tmpInQuotes && (tmpCharacter === ' '))
+		var tmpLineType = 'ValueSet';
+
+		if ((pLine.charAt(0) === '(') && (pLine.charAt(pLine.length-1) === ')'))
+		{
+			// This is the "Title" stanza, which is an underscore template.
+			tmpLineType = 'Title';
+			pEntries.TitleTemplate = pLine.substr(1, pLine.length-2);
+		}
+		else if (pLine.charAt(0) === ':')
+		{
+			tmpLineType = 'Property';
+
+			var tmpAssignmentLocation = pLine.indexOf('=');
+			console.log('LOCATION '+tmpAssignmentLocation)
+			pEntries.PropertyName = pLine.substr(1,tmpAssignmentLocation-1).trim();
+			pEntries.PropertyValue = pLine.substr(tmpAssignmentLocation+1,pLine.length-tmpAssignmentLocation).trim();
+			if (pEntries.PropertyValue === "false")
 			{
-				//console.log(' > TOKEN ['+tmpToken+']: '+tmpKey+' => '+tmpValue)
-				if ((tmpToken > 0) && (tmpKey != ''))
+				pEntries.PropertyValue = false;
+			}
+			if (pEntries.PropertyValue === "true")
+			{
+				pEntries.PropertyValue = true;
+			}
+		}
+		else
+		{
+			// Parse the extra properties for the column
+			for (var i = 0; i < pLine.length; i++)
+			{
+				// Walk each character.  Yes this is a horrible parsing technique.  Yes it works for now.
+				var tmpCharacter = pLine.charAt(i);
+				//console.log(' > Parsing character '+tmpCharacter)
+
+				if (!tmpInQuotes && (tmpCharacter === ' '))
 				{
-					pEntries[tmpKey] = tmpValue;
-				}
-				tmpToken++;
+					//console.log(' > TOKEN ['+tmpToken+']: '+tmpKey+' => '+tmpValue)
+					if ((tmpToken > 0) && (tmpKey != ''))
+					{
+						pEntries[tmpKey] = tmpValue;
+					}
+					tmpToken++;
 
-				tmpKey = '';
-				tmpValue = '';
-				tmpPrefix = true;
+					tmpKey = '';
+					tmpValue = '';
+					tmpPrefix = true;
+				}
+				else if (tmpCharacter === '"')
+				{
+					// Ignore quotes.
+					tmpInQuotes = !tmpInQuotes;
+				}
+				else if (tmpPrefix && (tmpCharacter === ':'))
+				{
+					tmpPrefix = false;
+				}
+				else if (tmpPrefix)
+				{
+					tmpKey += tmpCharacter;
+				}
+				else
+				{
+					tmpValue += tmpCharacter;
+				}
 			}
-			else if (tmpCharacter === '"')
+			if ((tmpToken > 0) && (tmpKey != ''))
 			{
-				// Ignore quotes.
-				tmpInQuotes = !tmpInQuotes;
-			}
-			else if (tmpPrefix && (tmpCharacter === ':'))
-			{
-				tmpPrefix = false;
-			}
-			else if (tmpPrefix)
-			{
-				tmpKey += tmpCharacter;
-			}
-			else
-			{
-				tmpValue += tmpCharacter;
+				pEntries[tmpKey] = tmpValue;
 			}
 		}
-		if ((tmpToken > 0) && (tmpKey != ''))
-		{
-			pEntries[tmpKey] = tmpValue;
-		}
+		return tmpLineType;
 	};
 
 	// Parse the file line-by-line
@@ -144,9 +174,7 @@ var ReadMicroDDLFile = function(pFable, pFileName, fComplete)
 					pFable.DDLParserState.CurrentScope = tmpLineSplit[0].substring(1);
 					// Add the table to the model if it doesn't exist.
 					InitializeScope(pFable.DDLParserState.CurrentScope, pFable);
-
 					console.log('  > Line #'+pFable.DDLParserState.LineCount+' begins table stanza: '+pFable.DDLParserState.CurrentScope);
-
 					pFable.DDLParserState.TableCount++;
 				}
 				// Check for a comment
@@ -158,56 +186,55 @@ var ReadMicroDDLFile = function(pFable, pFileName, fComplete)
 				else if ((tmpLineSplit[0] === '[Authorization') && (tmpLine.charAt(tmpLine.length-1) === ']'))
 				{
 					pFable.DDLParserState.StanzaType = 'ExtendedStanza-Authorization';
-
 					pFable.DDLParserState.CurrentScope = tmpLineSplit[1].substring(0, tmpLineSplit[1].length-1);
 					// Add the table to the model if it doesn't exist.
 					InitializeScope(pFable.DDLParserState.CurrentScope, pFable);
-
 					console.log('  > Line #'+pFable.DDLParserState.LineCount+' begins authorizor stanza: '+pFable.DDLParserState.CurrentScope);
+
+				}
+				else if ((tmpLineSplit[0] === '[PICT-Create') && (tmpLine.charAt(tmpLine.length-1) === ']'))
+				{
+					pFable.DDLParserState.StanzaType = 'ExtendedStanza-Pict-Create';
+					pFable.DDLParserState.CurrentScope = tmpLineSplit[1].substring(0, tmpLineSplit[1].length-1);
+					// Add the table to the model if it doesn't exist.
+					InitializePictScope(pFable.DDLParserState.CurrentScope, pFable);
+					console.log('  > Line #'+pFable.DDLParserState.LineCount+' begins PICT Create stanza: '+pFable.DDLParserState.CurrentScope);
 
 				}
 				else if ((tmpLineSplit[0] === '[PICT-List') && (tmpLine.charAt(tmpLine.length-1) === ']'))
 				{
 					pFable.DDLParserState.StanzaType = 'ExtendedStanza-Pict-List';
-
 					pFable.DDLParserState.CurrentScope = tmpLineSplit[1].substring(0, tmpLineSplit[1].length-1);
 					// Add the table to the model if it doesn't exist.
-					InitializeScope(pFable.DDLParserState.CurrentScope, pFable);
-
+					InitializePictScope(pFable.DDLParserState.CurrentScope, pFable);
 					console.log('  > Line #'+pFable.DDLParserState.LineCount+' begins PICT List stanza: '+pFable.DDLParserState.CurrentScope);
-
-				}
-				else if ((tmpLineSplit[0] === '[PICT-List-Virtual') && (tmpLine.charAt(tmpLine.length-1) === ']'))
-				{
-					pFable.DDLParserState.StanzaType = 'ExtendedStanza-Pict-List';
-
-					pFable.DDLParserState.CurrentScope = tmpLineSplit[1].substring(0, tmpLineSplit[1].length-1);
-					// Add the table to the model if it doesn't exist.
-					InitializeScope(pFable.DDLParserState.CurrentScope, pFable, false);
-
-					console.log('  > Line #'+pFable.DDLParserState.LineCount+' begins PICT Virtual List stanza: '+pFable.DDLParserState.CurrentScope);
 
 				}
 				else if ((tmpLineSplit[0] === '[PICT-Record') && (tmpLine.charAt(tmpLine.length-1) === ']'))
 				{
 					pFable.DDLParserState.StanzaType = 'ExtendedStanza-Pict-Record';
-
 					pFable.DDLParserState.CurrentScope = tmpLineSplit[1].substring(0, tmpLineSplit[1].length-1);
 					// Add the table to the model if it doesn't exist.
-					InitializeScope(pFable.DDLParserState.CurrentScope, pFable);
-
+					InitializePictScope(pFable.DDLParserState.CurrentScope, pFable);
 					console.log('  > Line #'+pFable.DDLParserState.LineCount+' begins PICT Record stanza: '+pFable.DDLParserState.CurrentScope);
 
 				}
-				else if ((tmpLineSplit[0] === '[PICT-Record-Virtual') && (tmpLine.charAt(tmpLine.length-1) === ']'))
+				else if ((tmpLineSplit[0] === '[PICT-Update') && (tmpLine.charAt(tmpLine.length-1) === ']'))
 				{
-					pFable.DDLParserState.StanzaType = 'ExtendedStanza-Pict-Record';
-
+					pFable.DDLParserState.StanzaType = 'ExtendedStanza-Pict-Update';
 					pFable.DDLParserState.CurrentScope = tmpLineSplit[1].substring(0, tmpLineSplit[1].length-1);
 					// Add the table to the model if it doesn't exist.
-					InitializeScope(pFable.DDLParserState.CurrentScope, pFable, false);
+					InitializePictScope(pFable.DDLParserState.CurrentScope, pFable);
+					console.log('  > Line #'+pFable.DDLParserState.LineCount+' begins PICT Update stanza: '+pFable.DDLParserState.CurrentScope);
 
-					console.log('  > Line #'+pFable.DDLParserState.LineCount+' begins PICT Virtual Record stanza: '+pFable.DDLParserState.CurrentScope);
+				}
+				else if ((tmpLineSplit[0] === '[PICT-Delete') && (tmpLine.charAt(tmpLine.length-1) === ']'))
+				{
+					pFable.DDLParserState.StanzaType = 'ExtendedStanza-Pict-Delete';
+					pFable.DDLParserState.CurrentScope = tmpLineSplit[1].substring(0, tmpLineSplit[1].length-1);
+					// Add the table to the model if it doesn't exist.
+					InitializePictScope(pFable.DDLParserState.CurrentScope, pFable);
+					console.log('  > Line #'+pFable.DDLParserState.LineCount+' begins PICT Delete stanza: '+pFable.DDLParserState.CurrentScope);
 
 				}
 				// Check for an include file
@@ -223,7 +250,7 @@ var ReadMicroDDLFile = function(pFable, pFileName, fComplete)
 				else
 				{
 					// We are ignoring all lines that aren't in table stanzas
-					if ((tmpLine.charAt(0) === '!'))
+					if ((tmpLine.charAt(0) !== '!'))
 					{
 						// Tell the user that they typed something that was ignored.
 						console.error('  > Compiler ignoring line #'+pFable.DDLParserState.LineCount+' because it is not within a table stanza.');
@@ -267,41 +294,37 @@ var ReadMicroDDLFile = function(pFable, pFileName, fComplete)
 					//console.log(JSON.stringify(pFable.Stricture.Authorization, null, 5));
 				}
 			}
-			else if (pFable.DDLParserState.StanzaType == 'ExtendedStanza-Pict-List')
+			else if (pFable.DDLParserState.StanzaType.substr(0,20) == 'ExtendedStanza-Pict-')
 			{
-				// Now assign the pict list data.
-				var tmpEntry = {
-					Column: tmpLineSplit[0]
-				};
-
-				ParseComplexProperties(tmpLine, tmpEntry);
-
-				console.log('  > Adding Pict List entry for entity '+pFable.DDLParserState.CurrentScope+' '+JSON.stringify(tmpEntry));
-
-				pFable.Stricture.Pict[pFable.DDLParserState.CurrentScope].List.Columns.push(tmpEntry);
-			}
-			else if (pFable.DDLParserState.StanzaType == 'ExtendedStanza-Pict-Record')
-			{
-				// Now assign the pict list data.
+				// Figure out which Pict operation this is (Update, Create, Delete, List, Record)
+				var tmpPictOperation = pFable.DDLParserState.StanzaType.substr(20,10);
 				// The character at index 0 defines the line type
 				var tmpLineTypeCharacter = tmpLine.charAt(0);
 				if (tmpLineTypeCharacter === '#')
 				{
-					console.log('  > Adding Pict Record Section Heading Definition: '+tmpLine);
+					console.log('  > Adding Pict '+tmpPictOperation+' Section Heading Definition: '+tmpLine);
 					var tmpEntry = {Column:tmpLine.substring(1), Type:'SectionHeading'};
-					pFable.Stricture.Pict[pFable.DDLParserState.CurrentScope].Record.Columns.push(tmpEntry);
+					pFable.Stricture.Pict[pFable.DDLParserState.CurrentScope][tmpPictOperation].Columns.push(tmpEntry);
 				}
 				else
 				{
-					var tmpEntry = {
-						Column: tmpLineSplit[0]
-					};
-
-					ParseComplexProperties(tmpLine, tmpEntry);
-
-					console.log('  > Adding Pict Record column for entity '+pFable.DDLParserState.CurrentScope+' '+JSON.stringify(tmpEntry));
-
-					pFable.Stricture.Pict[pFable.DDLParserState.CurrentScope].Record.Columns.push(tmpEntry);
+					var tmpEntry = {Column: tmpLineSplit[0]};
+					var tmpLineType = ParseComplexProperties(tmpLine, tmpEntry);
+					if (tmpLineType === 'Title')
+					{
+						console.log('  > Setting the title for the '+pFable.DDLParserState.CurrentScope+' -> '+tmpPictOperation+' display');
+						pFable.Stricture.Pict[pFable.DDLParserState.CurrentScope][tmpPictOperation].Title = tmpEntry.TitleTemplate;
+					}
+					else if (tmpLineType == 'Property')
+					{
+						console.log('  > Setting the '+tmpEntry.PropertyName+' property for the '+pFable.DDLParserState.CurrentScope+' -> '+tmpPictOperation+' display');
+						pFable.Stricture.Pict[pFable.DDLParserState.CurrentScope][tmpPictOperation][tmpEntry.PropertyName] = tmpEntry.PropertyValue;
+					}
+					else
+					{
+						console.log('  > Adding Pict '+tmpPictOperation+' column for entity '+pFable.DDLParserState.CurrentScope+' '+JSON.stringify(tmpEntry));
+						pFable.Stricture.Pict[pFable.DDLParserState.CurrentScope][tmpPictOperation].Columns.push(tmpEntry);
+					}
 				}
 			}
 			else if (pFable.DDLParserState.StanzaType == 'TableSchema')
