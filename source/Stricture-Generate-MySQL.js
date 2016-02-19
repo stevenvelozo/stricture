@@ -93,7 +93,7 @@ var libFS = require('fs');
 		}
 		if (tmpPrimaryKey)
 			libFS.appendFileSync(tmpMySQLFile, ",\n\n        PRIMARY KEY ("+tmpPrimaryKey+")");
-		libFS.appendFileSync(tmpMySQLFile, "\n    ) DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;\n");
+		libFS.appendFileSync(tmpMySQLFile, "\n    ) DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;\n");
 	}
 };
 
