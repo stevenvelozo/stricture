@@ -35,6 +35,7 @@ module.exports = (
 			{
 				Enabled: true,
 				RowMenu: true,
+				AddButton: true,
 				Columns: [],
 				Title: '<%= EntityName %>s'
 			}),
