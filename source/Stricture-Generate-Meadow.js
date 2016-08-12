@@ -28,7 +28,6 @@ var GenerateMeadow = function(pFable)
 
 			console.log('  > Table: '+tmpTable.TableName);
 
-
 			var tmpPrimaryKey = 'ID'+tmpTable.TableName;
 
 			// Get the primary key
@@ -40,6 +39,8 @@ var GenerateMeadow = function(pFable)
 				Scope: tmpTable.TableName,
 				DefaultIdentifier: tmpPrimaryKey,
 
+				Domain: (typeof(tmpTable.Domain) === 'undefined') ? 'Default' : tmpTable.Domain,
+
 				Schema: [],
 
 				DefaultObject: {},
@@ -50,6 +51,7 @@ var GenerateMeadow = function(pFable)
 					properties: {},
 					required: []
 				}),
+
 				Authorization: {}
 			});
 			for (var j = 0; j < tmpTable.Columns.length; j++)

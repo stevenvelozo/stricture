@@ -272,8 +272,6 @@ By including either of these fields, queries will automatically stamp the user I
 
 If a record includes the `IDCustomer` field, it is elligible for being authorized with the `MyCustomer` authorizer.  This is handy for multi-tennant applications, where tenancy is desired for most record types by default.
 
-
-
 ### Meadow Schema Files
 
     You can also generate meadow schema files!  Just run stricture with the 'Meadow' command.
