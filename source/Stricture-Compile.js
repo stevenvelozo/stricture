@@ -29,7 +29,8 @@ var ReadMicroDDLFile = function(pFable, pFileName, fComplete)
 		ColumnCount: 0,
 		InStanza: false,
 		CurrentScope: 'None',
-		StanzaType: 'None'
+		StanzaType: 'None',
+		CurrentDomain: 'Default'
 	});
 
 	var tmpIncludeFiles = [];
@@ -39,7 +40,7 @@ var ReadMicroDDLFile = function(pFable, pFileName, fComplete)
 	{
 		if (!pFable.Stricture.Tables.hasOwnProperty(pScopeHash))
 		{
-			pFable.Stricture.Tables[pScopeHash] = { TableName:pScopeHash, Columns:[] };
+			pFable.Stricture.Tables[pScopeHash] = { TableName:pScopeHash, Domain:pFable.DDLParserState.CurrentDomain, Columns:[] };
 			pFable.Stricture.TablesSequence.push(pScopeHash);
 
 			// Because these objects are all just key/value pairs and no functions/circular references, this is a safe and clean way to make unique copies.
@@ -183,6 +184,14 @@ var ReadMicroDDLFile = function(pFable, pFileName, fComplete)
 					// Skip comments
 				}
 				// Check for an extended stanza
+				else if ((tmpLineSplit[0] === '[Domain') && (tmpLine.charAt(tmpLine.length-1) === ']'))
+				{
+					// Change of domain, not stanza.
+					pFable.DDLParserState.CurrentDomain = tmpLineSplit[1].substring(0, tmpLineSplit[1].length-1);
+					// Add the table to the model if it doesn't exist.
+					InitializeScope(pFable.DDLParserState.CurrentScope, pFable);
+					console.log('  > Line #'+pFable.DDLParserState.LineCount+' changes the domain: '+pFable.DDLParserState.CurrentDomain);
+				}
 				else if ((tmpLineSplit[0] === '[Authorization') && (tmpLine.charAt(tmpLine.length-1) === ']'))
 				{
 					pFable.DDLParserState.StanzaType = 'ExtendedStanza-Authorization';
@@ -190,7 +199,6 @@ var ReadMicroDDLFile = function(pFable, pFileName, fComplete)
 					// Add the table to the model if it doesn't exist.
 					InitializeScope(pFable.DDLParserState.CurrentScope, pFable);
 					console.log('  > Line #'+pFable.DDLParserState.LineCount+' begins authorizor stanza: '+pFable.DDLParserState.CurrentScope);
-
 				}
 				else if ((tmpLineSplit[0] === '[PICT-Create') && (tmpLine.charAt(tmpLine.length-1) === ']'))
 				{
@@ -199,7 +207,6 @@ var ReadMicroDDLFile = function(pFable, pFileName, fComplete)
 					// Add the table to the model if it doesn't exist.
 					InitializePictScope(pFable.DDLParserState.CurrentScope, pFable);
 					console.log('  > Line #'+pFable.DDLParserState.LineCount+' begins PICT Create stanza: '+pFable.DDLParserState.CurrentScope);
-
 				}
 				else if ((tmpLineSplit[0] === '[PICT-List') && (tmpLine.charAt(tmpLine.length-1) === ']'))
 				{
@@ -208,7 +215,6 @@ var ReadMicroDDLFile = function(pFable, pFileName, fComplete)
 					// Add the table to the model if it doesn't exist.
 					InitializePictScope(pFable.DDLParserState.CurrentScope, pFable);
 					console.log('  > Line #'+pFable.DDLParserState.LineCount+' begins PICT List stanza: '+pFable.DDLParserState.CurrentScope);
-
 				}
 				else if ((tmpLineSplit[0] === '[PICT-Record') && (tmpLine.charAt(tmpLine.length-1) === ']'))
 				{
@@ -217,7 +223,6 @@ var ReadMicroDDLFile = function(pFable, pFileName, fComplete)
 					// Add the table to the model if it doesn't exist.
 					InitializePictScope(pFable.DDLParserState.CurrentScope, pFable);
 					console.log('  > Line #'+pFable.DDLParserState.LineCount+' begins PICT Record stanza: '+pFable.DDLParserState.CurrentScope);
-
 				}
 				else if ((tmpLineSplit[0] === '[PICT-Update') && (tmpLine.charAt(tmpLine.length-1) === ']'))
 				{
@@ -226,7 +231,6 @@ var ReadMicroDDLFile = function(pFable, pFileName, fComplete)
 					// Add the table to the model if it doesn't exist.
 					InitializePictScope(pFable.DDLParserState.CurrentScope, pFable);
 					console.log('  > Line #'+pFable.DDLParserState.LineCount+' begins PICT Update stanza: '+pFable.DDLParserState.CurrentScope);
-
 				}
 				else if ((tmpLineSplit[0] === '[PICT-Delete') && (tmpLine.charAt(tmpLine.length-1) === ']'))
 				{
@@ -235,7 +239,6 @@ var ReadMicroDDLFile = function(pFable, pFileName, fComplete)
 					// Add the table to the model if it doesn't exist.
 					InitializePictScope(pFable.DDLParserState.CurrentScope, pFable);
 					console.log('  > Line #'+pFable.DDLParserState.LineCount+' begins PICT Delete stanza: '+pFable.DDLParserState.CurrentScope);
-
 				}
 				// Check for an include file
 				else if ((tmpLineSplit[0] === '[Include') && (tmpLine.charAt(tmpLine.length-1) === ']'))

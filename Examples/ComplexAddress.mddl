@@ -7,6 +7,8 @@ $FirstName 38
 $LastName 38
 $Email 60
 
+[Domain Metadata]
+
 !Address
 @IDAddress
 #CreatingIDUser -> IDUser
