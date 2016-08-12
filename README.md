@@ -299,7 +299,6 @@ The built-in authorizers include:
 A basic example of this might be controlling access to the inventory table:
 
 ```
-
 [Authorization Inventory]
 Read User Mine
 Read Manager MyCustomer
@@ -310,3 +309,7 @@ Read Administrator Allow
 This will setup the security authorizers to allow Administrators to `Read` all inventory, Managers to only `Read` inventory for their customerID and Users to `Read` only inventory they have created.  As a bonus, pesky executives cannot `Read` anything.
 
 You can also comma separate authorizers, and multiple will run.  Or even add your own hashes -- just make sure you also inject that authorizer into the meadow endpoint object.
+
+# Change Log
+
+* _2016-08-12_: Added the concept of Domains to models
