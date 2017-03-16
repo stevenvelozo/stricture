@@ -447,6 +447,15 @@ var ReadMicroDDLFile = function(pFable, pFileName, fComplete)
 						tmpColumn.Join = tmpLineSplit[tmpLineSplit.length - 1];
 					}
 				}
+				// Detect a table-level join definition
+				if (tmpLineSplit.length > 2)
+				{
+					if (tmpLineSplit[tmpLineSplit.length - 2] == '=>')
+					{
+						tmpColumn.TableJoin = tmpLineSplit[tmpLineSplit.length - 1];
+					}
+				}
+
 
 				// Now deal with the collected state about the line
 				if (tmpLineType === 'Column')

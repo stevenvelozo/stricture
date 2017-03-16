@@ -61,6 +61,8 @@ var BuildDOTImage = function(pFable)
  *****/
 var GenerateRelationshipGraph = function(pFable)
 {
+	// Make sure joins only happen once
+	var tmpJoinCache = {};
 	// If the user passes in true, we will show all connections
 	pFable.DotFileName = pFable.settings.OutputLocation+pFable.settings.OutputFileName+'.dot';
 
@@ -94,6 +96,16 @@ var GenerateRelationshipGraph = function(pFable)
 						)
 					)
 					libFS.appendFileSync(pFable.DotFileName, pFable.Model.Tables[tmpTable].TableName+' -> '+pFable.ModelIndices[pFable.Model.Tables[tmpTable].Columns[j].Join]+"\n");
+			}
+			if (pFable.Model.Tables[tmpTable].Columns[j].TableJoin != undefined)
+			{
+				var tmpJoin = pFable.Model.Tables[tmpTable].TableName+' -> '+pFable.Model.Tables[tmpTable].Columns[j].TableJoin;
+				// Ensure joins only happen once.
+				if (!tmpJoinCache.hasOwnProperty(tmpJoin))
+				{
+					tmpJoinCache[tmpJoin] = true;
+					libFS.appendFileSync(pFable.DotFileName, tmpJoin+"\n");
+				}
 			}
 		}
 	}
