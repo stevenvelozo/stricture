@@ -350,17 +350,17 @@ var ReadMicroDDLFile = function(pFable, pFileName, fComplete)
 					*Text
 					&Date
 					^Boolean
+					[]
 				*/
 
 				// TODO: Push each of these off into their own functions.
+				var tmpColumnName = pFable.DDLParserState.CurrentScope+'_UnknownColumn';
 				if (tmpLineSplit[0].length > 1)
-				{
-					tmpColumn.Column = tmpLineSplit[0].substring(1);
-				}
-				else
-				{
-					tmpColumn.Column = pFable.DDLParserState.CurrentScope+'_UnknownColumn_'+tmpColumnCount;
-				}
+					tmpColumnName = tmpLineSplit[0].substring(1);					
+				var tmpExisting = pFable.Stricture.Tables[pFable.DDLParserState.CurrentScope].Columns.find((pElement) => { return pElement.Column === tmpColumnName});
+				if (typeof(tmpExisting) !== 'undefined')
+					tmpColumn = tmpExisting;
+				tmpColumn.Column = tmpColumnName;
 
 				// This parses each line looking for column definitions
 				switch(tmpLineTypeCharacter)
@@ -437,6 +437,13 @@ var ReadMicroDDLFile = function(pFable, pFileName, fComplete)
 						// ### Integer Number
 						tmpLineType = 'Column';
 						tmpColumn.DataType = 'Boolean';
+						break;
+
+					case '"':
+						// ### Integer Number
+						tmpLineType = 'ColumnDescription';
+						tmpColumn.Description = tmpLine.substring(tmpLineSplit[0].length+1);
+						tmpColumn.Description = tmpColumn.Description.substring(0, tmpColumn.Description.length-1);
 						break;
 				}
 				// Detect a join definition
