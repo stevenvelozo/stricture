@@ -26,7 +26,7 @@ var libFS = require('fs');
 		libFS.appendFileSync(tmpTableFile, "\n\\section{"+pFable.Model.Tables[tmpTable].TableName+"}\n");
 		libFS.appendFileSync(tmpTableFile, "\\begin{small}\n");
 		libFS.appendFileSync(tmpTableFile, "\\begin{tabularx}{\\textwidth}{ l l l X }\n");
-		libFS.appendFileSync(tmpTableFile, "\\textbf{Column Name} & \\textbf{Size} & \\textbf{Data Type} & \\textbf{Notes`} \\\\ \\hline \n");
+		libFS.appendFileSync(tmpTableFile, "\\textbf{Column Name} & \\textbf{Size} & \\textbf{Data Type} & \\textbf{Notes} \\\\ \\hline \n");
 		for (var j = 0; j < pFable.Model.Tables[tmpTable].Columns.length; j++)
 		{
 			// Dump out each column......
