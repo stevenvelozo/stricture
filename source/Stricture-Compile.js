@@ -40,7 +40,7 @@ var ReadMicroDDLFile = function(pFable, pFileName, fComplete)
 	{
 		if (!pFable.Stricture.Tables.hasOwnProperty(pScopeHash))
 		{
-			pFable.Stricture.Tables[pScopeHash] = { TableName:pScopeHash, Domain:pFable.DDLParserState.CurrentDomain, Columns:[] };
+			pFable.Stricture.Tables[pScopeHash] = { TableName:pScopeHash, Domain:pFable.DDLParserState.CurrentDomain, Columns:[], Description: '' };
 			pFable.Stricture.TablesSequence.push(pScopeHash);
 
 			// Because these objects are all just key/value pairs and no functions/circular references, this is a safe and clean way to make unique copies.
@@ -440,10 +440,18 @@ var ReadMicroDDLFile = function(pFable, pFileName, fComplete)
 						break;
 
 					case '"':
-						// ### Integer Number
+						// ### Column Description
 						tmpLineType = 'ColumnDescription';
 						tmpColumn.Description = tmpLine.substring(tmpLineSplit[0].length+1);
 						tmpColumn.Description = tmpColumn.Description.substring(0, tmpColumn.Description.length-1);
+						break;
+					case '>':
+						// ### Table Description
+						tmpLineType = 'TableDescription';
+						var tmpDescription = tmpLine.substring(1);
+						if (pFable.Stricture.Tables[pFable.DDLParserState.CurrentScope].Description.length > 0)
+							pFable.Stricture.Tables[pFable.DDLParserState.CurrentScope].Description += "\n\n";
+						pFable.Stricture.Tables[pFable.DDLParserState.CurrentScope].Description += tmpDescription;
 						break;
 				}
 				// Detect a join definition

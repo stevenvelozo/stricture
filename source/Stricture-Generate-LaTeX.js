@@ -24,8 +24,12 @@ var libFS = require('fs');
 	for(var tmpTable in pFable.Model.Tables)
 	{
 		libFS.appendFileSync(tmpTableFile, "\n\\section{"+pFable.Model.Tables[tmpTable].TableName+"}\n");
+		if (pFable.Model.Tables[tmpTable].hasOwnProperty('Description') && pFable.Model.Tables[tmpTable].Description.length > 0)
+		{
+			libFS.appendFileSync(tmpTableFile, pFable.Model.Tables[tmpTable].Description+"\n\\vspace{4mm}\n\n\\noindent\n");
+		}
 		libFS.appendFileSync(tmpTableFile, "\\begin{small}\n");
-		libFS.appendFileSync(tmpTableFile, "\\begin{tabularx}{\\textwidth}{ l r l X }\n");
+		libFS.appendFileSync(tmpTableFile, "\\begin{tabularx}{\\textwidth}{ l l l X }\n");
 		libFS.appendFileSync(tmpTableFile, "\\textbf{Column Name} & \\textbf{Size} & \\textbf{Data Type} & \\textbf{Notes} \\\\ \\hline \n");
 		for (var j = 0; j < pFable.Model.Tables[tmpTable].Columns.length; j++)
 		{
