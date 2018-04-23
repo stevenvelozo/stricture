@@ -376,6 +376,12 @@ var ReadMicroDDLFile = function(pFable, pFileName, fComplete)
 						tmpLineType = 'Column';
 						tmpColumn.DataType = 'GUID';
 						break;
+					
+					case '~':
+						// ### Foreign Identity column
+						tmpLineType = 'Column';
+						tmpColumn.DataType = 'ForeignKey';
+						break;
 
 					case '$':
 						// ### String

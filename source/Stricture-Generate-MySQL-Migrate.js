@@ -122,6 +122,13 @@ FROM
 					tmpFromQuery += "        -- {" + pFable.Model.Tables[tmpTable].Columns[j].Column + "} CHAR(36) NOT NULL DEFAULT '00000000-0000-0000-0000-000000000000'\n";
 					tmpFromQuery += "        TABLE_FROM."+pFable.Model.Tables[tmpTable].Columns[j].Column;
 					break;
+				case 'ForeignKey':
+					libFS.appendFileSync(tmpMySQLFile, "        -- INT UNSIGNED NOT NULL DEFAULT '0'\n");
+					libFS.appendFileSync(tmpMySQLFile, "        "+pFable.Model.Tables[tmpTable].Columns[j].Column);
+					tmpFromQuery += "        -- {" + pFable.Model.Tables[tmpTable].Columns[j].Column + "} INT UNSIGNED NOT NULL DEFAULT '0'\n";
+					tmpFromQuery += "        TABLE_FROM."+pFable.Model.Tables[tmpTable].Columns[j].Column;
+					tmpPrimaryKey = pFable.Model.Tables[tmpTable].Columns[j].Column;
+					break;
 				case 'Numeric':
 					libFS.appendFileSync(tmpMySQLFile, "        -- INT NOT NULL DEFAULT '0'\n");
 					libFS.appendFileSync(tmpMySQLFile, "        "+pFable.Model.Tables[tmpTable].Columns[j].Column);
