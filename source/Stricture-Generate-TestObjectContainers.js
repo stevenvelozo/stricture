@@ -54,6 +54,9 @@ var GenerateTestObjects = function(pFable)
 						tmpGUIDList.push(tmpColumnName);
 						tmpDefaultTestObject[tmpColumnName] = '0x000000000000';
 						break;
+					case 'ForeignKey':
+						tmpDefaultTestObject[tmpColumnName] = 0;
+						break;
 					case 'Numeric':
 						tmpDefaultTestObject[tmpColumnName] = 0;
 						break;

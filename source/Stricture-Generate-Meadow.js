@@ -74,6 +74,12 @@ var GenerateMeadow = function(pFable)
 						tmpModel.DefaultObject[tmpColumnName] = '0x0000000000000000';
 						tmpModel.JsonSchema.properties[tmpColumnName] = {type: 'string'}
 						break;
+					case 'ForeignKey':
+						tmpSchemaEntry.Type = 'Integer';
+						tmpModel.DefaultObject[tmpColumnName] = 0;
+						tmpModel.JsonSchema.properties[tmpColumnName] = {type: 'integer'}
+						tmpModel.JsonSchema.required.push(tmpColumnName);
+						break;
 					case 'Numeric':
 						tmpSchemaEntry.Type = 'Integer';
 						tmpModel.DefaultObject[tmpColumnName] = 0;

@@ -69,6 +69,10 @@ var libFS = require('fs');
 				case 'GUID':
 					libFS.appendFileSync(tmpMySQLFile, "        "+pFable.Model.Tables[tmpTable].Columns[j].Column+" CHAR(36) NOT NULL DEFAULT '00000000-0000-0000-0000-000000000000'");
 					break;
+				case 'ForeignKey':
+					libFS.appendFileSync(tmpMySQLFile, "        "+pFable.Model.Tables[tmpTable].Columns[j].Column+" INT UNSIGNED NOT NULL DEFAULT '0'");
+					tmpPrimaryKey = pFable.Model.Tables[tmpTable].Columns[j].Column;
+					break;
 				case 'Numeric':
 					libFS.appendFileSync(tmpMySQLFile, "        "+pFable.Model.Tables[tmpTable].Columns[j].Column+" INT NOT NULL DEFAULT '0'");
 					break;

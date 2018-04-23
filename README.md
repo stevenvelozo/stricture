@@ -100,7 +100,8 @@ The generated JSON in `Examples/SimpleAddress.mddl.json` looks like:
         "Columns":
         [
           {"Column":"IDContact","DataType":"ID"},
-          {"Column":"CreatingIDUser","DataType":"Numeric","Join":"IDUser"},
+          {"Column":"CreatingIDUser","DataType":"ForeignKey","Join":"IDUser"},
+          {"Column":"Ordinal","DataType":"Numeric"},
           {"Column":"Name","DataType":"String","Size":"90"},
           {"Column":"Email","DataType":"String","Size":"60"}
         ]
@@ -110,8 +111,8 @@ The generated JSON in `Examples/SimpleAddress.mddl.json` looks like:
         "Columns":
         [
           {"Column":"IDAddress","DataType":"ID"},
-          {"Column":"CreatingIDUser","DataType":"Numeric","Join":"IDUser"},
-          {"Column":"IDContact","DataType":"Numeric","Join":"IDContact"},
+          {"Column":"CreatingIDUser","DataType":"ForeignKey","Join":"IDUser"},
+          {"Column":"IDContact","DataType":"ForeignKey","Join":"IDContact"},
           {"Column":"Address","DataType":"String","Size":"130"},
           {"Column":"City","DataType":"String","Size":"48"},
           {"Column":"State","DataType":"String","Size":"24"},

@@ -44,8 +44,8 @@ $PhotoPath 255
 .Salary
 
 !EmployeeTerritories
-#EmployeeID -> EmployeeID
-#TerritoryID -> TerritoryID
+~EmployeeID -> EmployeeID
+~TerritoryID -> TerritoryID
 
 !OrderDetails
 #OrderID -> OrderID
@@ -56,8 +56,8 @@ $PhotoPath 255
 
 !Orders
 @OrderID
-#CustomerID -> CustomerID
-#EmployeeID -> EmployeeID
+~CustomerID -> CustomerID
+~EmployeeID -> EmployeeID
 &OrderDate
 &RequiredDate
 &ShippedDate
@@ -73,8 +73,8 @@ $ShipCountry 15
 !Products
 @ProductID
 $ProductName 40
-#SupplierID -> SupplierID
-#CategoryID -> CategoryID
+~SupplierID -> SupplierID
+~CategoryID -> CategoryID
 $QuantityPerUnit 20
 .UnitPrice 10,4
 #UnitsInStock
@@ -98,7 +98,7 @@ $ContactName 30
 $ContactTitle 30
 $Address 60
 $City 15
-#RegionID -> RegionID
+~RegionID -> RegionID
 $PostalCode 10
 $Country 15
 $Phone 24
