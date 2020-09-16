@@ -55,6 +55,29 @@ var _AllowAll = (
 	}
 );
 
+var _Readonly = (
+	{
+		Create: 'Deny',
+
+		Read: 'Allow',
+		Reads: 'Allow',
+		ReadsBy: 'Allow',
+		ReadMax: 'Allow',
+		ReadSelectList: 'Allow',
+
+		Update: 'Deny',
+
+		Delete: 'Deny',
+
+		Count: 'Allow',
+		CountBy: 'Allow',
+
+		Schema: 'Allow',
+		Validate: 'Allow',
+		New: 'Deny'
+	}
+);
+
 var _AllowCustomer = (
 	{
 		Create: 'Allow',
@@ -106,7 +129,8 @@ module.exports = (
 	{
 		/* ### There are six roles:
 		 *
-		 * - Role 0: Unauthenticated
+		 * - Role <0: Unauthenticated
+		 * - Role 0: Readonly
 		 * - Role 1: User
 		 * - Role 2: Manager
 		 * - Role 3: Director
@@ -129,6 +153,7 @@ module.exports = (
 		__DefaultAPISecurity: _DenyAll,
 
 		Unauthenticated: _DenyAll,
+		Readonly: _Readonly,
 		User: _AllowCustomerMine,
 		Manager: _AllowCustomerMine,
 		Director: _AllowCustomer,
