@@ -9,7 +9,6 @@
 */
 
 var libMkdirp = require('mkdirp');
-console = require('better-console');
 
 var Stricture = function(pSettings)
 {
@@ -27,11 +26,11 @@ var Stricture = function(pSettings)
 	}
 
 	// Check if the output folder exists, create it if it doesn't.
-	libMkdirp(_Fable.settings.OutputLocation, 
+	libMkdirp(_Fable.settings.OutputLocation,
 		function (pError)
 		{
-		    if (pError)
-		    {
+			if (pError)
+			{
 				console.log('ERROR: You must provide at least an input filename for the DDL JSON file.');
 				console.log('       For Example: node Stricture.js -i "BestDDLEvar.mddl"');
 				process.exit(1);
