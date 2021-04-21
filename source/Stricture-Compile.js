@@ -188,8 +188,6 @@ var ReadMicroDDLFile = function(pFable, pFileName, fComplete)
 				{
 					// Change of domain, not stanza.
 					pFable.DDLParserState.CurrentDomain = tmpLineSplit[1].substring(0, tmpLineSplit[1].length-1);
-					// Add the table to the model if it doesn't exist.
-					InitializeScope(pFable.DDLParserState.CurrentScope, pFable);
 					console.log('  > Line #'+pFable.DDLParserState.LineCount+' changes the domain: '+pFable.DDLParserState.CurrentDomain);
 				}
 				else if ((tmpLineSplit[0] === '[Authorization') && (tmpLine.charAt(tmpLine.length-1) === ']'))
@@ -356,7 +354,7 @@ var ReadMicroDDLFile = function(pFable, pFileName, fComplete)
 				// TODO: Push each of these off into their own functions.
 				var tmpColumnName = pFable.DDLParserState.CurrentScope+'_UnknownColumn';
 				if (tmpLineSplit[0].length > 1)
-					tmpColumnName = tmpLineSplit[0].substring(1);					
+					tmpColumnName = tmpLineSplit[0].substring(1);
 				var tmpExisting = pFable.Stricture.Tables[pFable.DDLParserState.CurrentScope].Columns.find((pElement) => { return pElement.Column === tmpColumnName});
 				if (typeof(tmpExisting) !== 'undefined')
 					tmpColumn = tmpExisting;
@@ -376,7 +374,7 @@ var ReadMicroDDLFile = function(pFable, pFileName, fComplete)
 						tmpLineType = 'Column';
 						tmpColumn.DataType = 'GUID';
 						break;
-					
+
 					case '~':
 						// ### Foreign Identity column
 						tmpLineType = 'Column';
@@ -504,7 +502,7 @@ var ReadMicroDDLFile = function(pFable, pFileName, fComplete)
 			if (tmpIncludeFiles.length > 0)
 			{
 				console.log('>>> Processing '+tmpIncludeFiles.length+' include files');
-				libAsync.eachSeries(tmpIncludeFiles, 
+				libAsync.eachSeries(tmpIncludeFiles,
 					function(pIncludeFile, fCallback)
 					{
 						console.log('--> Processing '+pIncludeFile+' include file');
@@ -554,16 +552,16 @@ var ReadMicroDDLFile = function(pFable, pFileName, fComplete)
 	console.log('  > Extended Output file: '+tmpStrictureModelExtendedFile);
 
 	// Read in the file
-	console.info('  > Reading DDL File(s)');				
-	ReadMicroDDLFile(pFable, pFable.settings.InputFileName, 
+	console.info('  > Reading DDL File(s)');
+	ReadMicroDDLFile(pFable, pFable.settings.InputFileName,
 		function()
 		{
 			// Generate the output
-			console.info('  > Metacompiling the Model');	
+			console.info('  > Metacompiling the Model');
 			libJSONFile.writeFile(tmpStrictureModelFile,
 				{Tables: pFable.Stricture.Tables},
 				{spaces: 4},
-				function(pError) 
+				function(pError)
 				{
 					if (pError)
 					{
@@ -571,7 +569,7 @@ var ReadMicroDDLFile = function(pFable, pFileName, fComplete)
 					}
 					else
 					{
-						console.info('  > Model JSON Successfully Written');				
+						console.info('  > Model JSON Successfully Written');
 					}
 				}
 			);
@@ -581,7 +579,7 @@ var ReadMicroDDLFile = function(pFable, pFileName, fComplete)
 			libJSONFile.writeFile(tmpStrictureModelExtendedFile,
 				pFable.Stricture,
 				{spaces: 4},
-				function(pError) 
+				function(pError)
 				{
 					if (pError)
 					{
@@ -589,7 +587,7 @@ var ReadMicroDDLFile = function(pFable, pFileName, fComplete)
 					}
 					else
 					{
-						console.info('  > Extended Model JSON Successfully Written');				
+						console.info('  > Extended Model JSON Successfully Written');
 					}
 				}
 			);
@@ -599,7 +597,7 @@ var ReadMicroDDLFile = function(pFable, pFileName, fComplete)
 			libJSONFile.writeFile(tmpStrictureModelPICTFile,
 				pFable.Stricture.Pict,
 				{spaces: 4},
-				function(pError) 
+				function(pError)
 				{
 					if (pError)
 					{
@@ -607,7 +605,7 @@ var ReadMicroDDLFile = function(pFable, pFileName, fComplete)
 					}
 					else
 					{
-						console.info('  > PICT JSON Successfully Written');				
+						console.info('  > PICT JSON Successfully Written');
 					}
 				}
 			);
