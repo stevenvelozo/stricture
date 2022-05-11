@@ -13,11 +13,11 @@ var libYargs = require('yargs');
 */
 var _Options =
 {
-	Command: 'Info',
+	Command: 'Full',
 
-	InputFileName: null,
-	OutputLocation: './build/',
-	OutputFileName: 'Stricture_Output',
+	InputFileName: './Model.ddl',
+	OutputLocation: './model/',
+	OutputFileName: 'MeadowModel',
 
 	// Automatically compile the image/pdf/whatever if it can
 	AutomaticallyCompile: false,

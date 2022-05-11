@@ -38,7 +38,8 @@ var Stricture = function(pSettings)
 			else
 			{
 				// Load the JSON, then run the command with the model passed in
-				require('./Stricture-Run-Prepare.js')(_Fable, require('./Stricture-Run-ExecuteCommand.js'));
+				let tmpRunPrepare = require('./Stricture-Run-Prepare.js');
+				tmpRunPrepare(_Fable, require('./Stricture-Run-ExecuteCommand.js'));
 			}
 		}
 	);

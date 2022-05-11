@@ -7,9 +7,23 @@
 * @module Stricture
 */
 
-// Load the JSON data into the pFable object before running a command
-var executeModelCommand = function(pCommandFile, pFable)
+const libAsync = require('async');
+var libMkdirp = require('mkdirp');
+const { first } = require('underscore');
+
+var createDirectories = function(pFable, fCallback)
 {
+	libMkdirp(pFable.settings.OutputLocation,
+		(pError)=>
+		{
+			return fCallback();
+		});
+};
+
+// Load the JSON data into the pFable object before running a command
+var executeModelCommand = function(pCommandFile, pFable, fCallback)
+{
+	let tmpCallback = (typeof(fCallback) == 'function') ? fCallback : ()=>{};
 	// The pCommandFile parameter contains the filename of the modular command to execute
 	try
 	{
@@ -20,6 +34,7 @@ var executeModelCommand = function(pCommandFile, pFable)
 			{
 				tmpCommandFunction(pFable);
 				console.timeEnd("Stricture Command Execution");
+				return tmpCallback();
 			}
 		);
 	}
@@ -27,6 +42,7 @@ var executeModelCommand = function(pCommandFile, pFable)
 	{
 		console.log('>>> Command ['+pCommandFile+'] execution failed!');
 		console.log('  > '+pError);
+		return tmpCallback(pError);
 	}
 };
 
@@ -38,6 +54,86 @@ var runCommand = function(pFable)
 	console.info('--> Running Command: '+tmpCommand);
 	switch(tmpCommand)
 	{
+		case 'Full':
+			libAsync.waterfall(
+				[
+					(fStageComplete)=>
+					{
+						// Start by compiling
+						require('./Stricture-Compile.js')(pFable, fStageComplete);
+					},
+					(fStageComplete)=>
+					{
+						// Now twiddle settings to use the proper input file (the Meadow extended)
+						pFable.settings.InputFileName = './model/MeadowModel-Extended.json';
+						pFable.settings.OutputLocationPrefix = pFable.settings.OutputLocation;
+
+						return fStageComplete();
+					},
+					(fStageComplete)=>
+					{
+						// Setup the directories for the new model command
+						pFable.settings.OutputLocation = `${pFable.settings.OutputLocationPrefix}mysql_create/`;
+						pFable.settings.OutputFileName = `MeadowModel-CreateMySQLDatabase`;
+						createDirectories(pFable, fStageComplete);
+					},
+					(fStageComplete)=>
+					{
+						// Now build MySQL create Statements
+						executeModelCommand('./Stricture-Generate-MySQL.js', pFable, fStageComplete);
+					},
+					(fStageComplete)=>
+					{
+						console.log('aaaaaa')
+						// Setup the directories for the meadow schemas
+						pFable.settings.OutputLocation = `${pFable.settings.OutputLocationPrefix}meadow/`;
+						pFable.settings.OutputFileName = `MeadowSchema`;
+						createDirectories(pFable, fStageComplete);
+					},
+					(fStageComplete)=>
+					{
+						// Now build individual Meadow schemas
+						executeModelCommand('./Stricture-Generate-Meadow.js', pFable, fStageComplete);
+					},
+					(fStageComplete)=>
+					{
+						// Setup the directories for the Documentation commands
+						pFable.settings.OutputLocation = `${pFable.settings.OutputLocationPrefix}doc/`;
+						pFable.settings.OutputFileName = `Documentation`;
+						createDirectories(pFable, fStageComplete);
+					},
+					(fStageComplete)=>
+					{
+						// Now build Markdown documentation
+						executeModelCommand('./Stricture-Generate-Markdown.js', pFable, fStageComplete);
+					},
+					(fStageComplete)=>
+					{
+						// Setup the directories for the diagram command
+						pFable.settings.OutputLocation = `${pFable.settings.OutputLocationPrefix}doc/diagrams/`;
+						pFable.settings.OutputFileName = `Relationships`;
+						createDirectories(pFable, fStageComplete);
+					},
+					(fStageComplete)=>
+					{
+						// Now build diagrams
+						pFable.settings.AutomaticallyCompile = true;
+						executeModelCommand('./Stricture-Generate-ModelGraph.js', pFable, fStageComplete);
+					},
+					(fStageComplete)=>
+					{
+						// Now build the second (full) relationship diagram
+						pFable.settings.OutputFileName = `RelationshipsFull`;
+						pFable.settings.GraphFullJoins = true;
+						executeModelCommand('./Stricture-Generate-ModelGraph.js', pFable, fStageComplete);
+					}
+				],
+				(pError)=>
+				{
+					console.log('Error running full compilation... '+pError);
+				}
+			);
+			break;
 		// Convert the MicroDDL to JSON
 		case 'Compile':
 			require('./Stricture-Compile.js')(pFable);

@@ -522,11 +522,13 @@ var ReadMicroDDLFile = function(pFable, pFileName, fComplete)
  * MicroDDL Compiler
  *
  *****/
- var CompileMicroDDL = function(pFable)
+ var CompileMicroDDL = function(pFable, fCallback)
  {
 	var tmpStrictureModelFile = pFable.settings.OutputLocation+pFable.settings.OutputFileName+'.json';
 	var tmpStrictureModelExtendedFile = pFable.settings.OutputLocation+pFable.settings.OutputFileName+'-Extended.json';
 	var tmpStrictureModelPICTFile = pFable.settings.OutputLocation+pFable.settings.OutputFileName+'-PICT.json';
+
+	var tmpCallback = (typeof(fCallback) === 'function') ? fCallback : ()=>{};
 
 	pFable.Stricture = (
 		{
@@ -556,59 +558,86 @@ var ReadMicroDDLFile = function(pFable, pFileName, fComplete)
 	ReadMicroDDLFile(pFable, pFable.settings.InputFileName,
 		function()
 		{
-			// Generate the output
-			console.info('  > Metacompiling the Model');
-			libJSONFile.writeFile(tmpStrictureModelFile,
-				{Tables: pFable.Stricture.Tables},
-				{spaces: 4},
-				function(pError)
+			libAsync.waterfall(
+				[
+					(fStageComplete)=>
+					{
+						// Generate the output
+						console.info('  > Metacompiling the Model');
+						libJSONFile.writeFile(tmpStrictureModelFile,
+							{Tables: pFable.Stricture.Tables},
+							{spaces: 4},
+							function(pError)
+							{
+								if (pError)
+								{
+									console.error('  > Error writing out model JSON: '+pError);
+								}
+								else
+								{
+									console.info('  > Model JSON Successfully Written');
+								}
+								return fStageComplete(pError);
+							}
+						);
+					},
+					(fStageComplete)=>
+					{
+						// Generate the output
+						console.info('  > Compiling the Extended Model');
+						libJSONFile.writeFile(tmpStrictureModelExtendedFile,
+							pFable.Stricture,
+							{spaces: 4},
+							function(pError)
+							{
+								if (pError)
+								{
+									console.error('  > Error writing out Extended model JSON: '+pError);
+								}
+								else
+								{
+									console.info('  > Extended Model JSON Successfully Written');
+								}
+								return fStageComplete(pError);
+							}
+						);
+					},
+					(fStageComplete)=>
+					{
+						// Generate the output
+						console.info('  > Compiling the PICT Definition');
+						libJSONFile.writeFile(tmpStrictureModelPICTFile,
+							pFable.Stricture.Pict,
+							{spaces: 4},
+							function(pError)
+							{
+								if (pError)
+								{
+									console.error('  > Error writing out PICT model JSON: '+pError);
+								}
+								else
+								{
+									console.info('  > PICT JSON Successfully Written');
+								}
+								return fStageComplete(pError);
+							}
+						);
+					}
+				],
+				(pError)=>
 				{
 					if (pError)
 					{
-						console.error('  > Error writing out model JSON: '+pError);
+						console.error('  > ERROR Compiling DDL: '+pError);
 					}
 					else
 					{
-						console.info('  > Model JSON Successfully Written');
+						console.info('  > DDL Compile Stages completed successfully.');
 					}
-				}
-			);
 
-			// Generate the output
-			console.info('  > Compiling the Extended Model');
-			libJSONFile.writeFile(tmpStrictureModelExtendedFile,
-				pFable.Stricture,
-				{spaces: 4},
-				function(pError)
-				{
-					if (pError)
-					{
-						console.error('  > Error writing out Extended model JSON: '+pError);
-					}
-					else
-					{
-						console.info('  > Extended Model JSON Successfully Written');
-					}
+					return tmpCallback(pError);
 				}
-			);
-
-			// Generate the output
-			console.info('  > Compiling the PICT Definition');
-			libJSONFile.writeFile(tmpStrictureModelPICTFile,
-				pFable.Stricture.Pict,
-				{spaces: 4},
-				function(pError)
-				{
-					if (pError)
-					{
-						console.error('  > Error writing out PICT model JSON: '+pError);
-					}
-					else
-					{
-						console.info('  > PICT JSON Successfully Written');
-					}
-				}
-			);
+			)
 		}
 	);
 };
