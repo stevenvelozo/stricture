@@ -84,7 +84,6 @@ var runCommand = function(pFable)
 					},
 					(fStageComplete)=>
 					{
-						console.log('aaaaaa')
 						// Setup the directories for the meadow schemas
 						pFable.settings.OutputLocation = `${pFable.settings.OutputLocationPrefix}meadow/`;
 						pFable.settings.OutputFileName = `MeadowSchema`;
