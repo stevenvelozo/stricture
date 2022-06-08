@@ -129,7 +129,10 @@ var runCommand = function(pFable)
 				],
 				(pError)=>
 				{
-					console.log('Error running full compilation... '+pError);
+					if (pError)
+					{
+						console.log('Error running full compilation... '+pError);
+					}
 				}
 			);
 			break;

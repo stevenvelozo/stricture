@@ -58,6 +58,7 @@ var GenerateMeadow = function(pFable)
 			{
 				var tmpColumnName = tmpTable.Columns[j].Column;
 				var tmpColumnType = tmpTable.Columns[j].DataType;
+				var tmpColumnSize = tmpTable.Columns[j].hasOwnProperty('Size') ? tmpTable.Columns[j].Size : 'Default';
 
 				var tmpSchemaEntry = {Column:tmpColumnName, Type:'Default'};
 				// Dump out each column......
@@ -66,45 +67,45 @@ var GenerateMeadow = function(pFable)
 					case 'ID':
 						tmpSchemaEntry.Type = 'AutoIdentity';
 						tmpModel.DefaultObject[tmpColumnName] = 0;
-						tmpModel.JsonSchema.properties[tmpColumnName] = {type: 'integer'}
+						tmpModel.JsonSchema.properties[tmpColumnName] = {type: 'integer', size: tmpColumnSize};
 						tmpModel.JsonSchema.required.push(tmpColumnName);
 						break;
 					case 'GUID':
 						tmpSchemaEntry.Type = 'AutoGUID';
 						tmpModel.DefaultObject[tmpColumnName] = '0x0000000000000000';
-						tmpModel.JsonSchema.properties[tmpColumnName] = {type: 'string'}
+						tmpModel.JsonSchema.properties[tmpColumnName] = {type: 'string', size: tmpColumnSize};
 						break;
 					case 'ForeignKey':
 						tmpSchemaEntry.Type = 'Integer';
 						tmpModel.DefaultObject[tmpColumnName] = 0;
-						tmpModel.JsonSchema.properties[tmpColumnName] = {type: 'integer'}
+						tmpModel.JsonSchema.properties[tmpColumnName] = {type: 'integer', size: tmpColumnSize};
 						tmpModel.JsonSchema.required.push(tmpColumnName);
 						break;
 					case 'Numeric':
 						tmpSchemaEntry.Type = 'Integer';
 						tmpModel.DefaultObject[tmpColumnName] = 0;
-						tmpModel.JsonSchema.properties[tmpColumnName] = {type: 'integer'}
+						tmpModel.JsonSchema.properties[tmpColumnName] = {type: 'integer', size: tmpColumnSize};
 						break;
 					case 'Decimal':
 						tmpSchemaEntry.Type = 'Decimal';
 						tmpModel.DefaultObject[tmpColumnName] = 0.0;
-						tmpModel.JsonSchema.properties[tmpColumnName] = {type: 'number'}
+						tmpModel.JsonSchema.properties[tmpColumnName] = {type: 'number', size: tmpColumnSize};
 						break;
 					case 'String':
 					case 'Text':
 						tmpSchemaEntry.Type = 'String';
 						tmpModel.DefaultObject[tmpColumnName] = '';
-						tmpModel.JsonSchema.properties[tmpColumnName] = {type: 'string'}
+						tmpModel.JsonSchema.properties[tmpColumnName] = {type: 'string', size: tmpColumnSize};
 						break;
 					case 'DateTime':
 						tmpSchemaEntry.Type = 'DateTime';
 						tmpModel.DefaultObject[tmpColumnName] = null;
-						tmpModel.JsonSchema.properties[tmpColumnName] = {type: 'string'}
+						tmpModel.JsonSchema.properties[tmpColumnName] = {type: 'string', size: tmpColumnSize};
 						break;
 					case 'Boolean':
 						tmpSchemaEntry.Type = 'Boolean';
 						tmpModel.DefaultObject[tmpColumnName] = false;
-						tmpModel.JsonSchema.properties[tmpColumnName] = {type: 'boolean'}
+						tmpModel.JsonSchema.properties[tmpColumnName] = {type: 'boolean', size: tmpColumnSize};
 						break;
 				}
 				// Now mark up the magic columns that branch by name
@@ -132,6 +133,8 @@ var GenerateMeadow = function(pFable)
 						tmpSchemaEntry.Type = 'Deleted';
 						break;
 				}
+				tmpSchemaEntry.Size = tmpColumnSize;
+
 				// Now add it to the array
 				tmpModel.Schema.push(tmpSchemaEntry);
 			}

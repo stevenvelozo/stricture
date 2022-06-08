@@ -1,0 +1,1 @@
+let tmpStricture = require('../Stricture.js');

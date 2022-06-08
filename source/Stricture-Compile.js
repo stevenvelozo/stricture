@@ -399,6 +399,7 @@ var ReadMicroDDLFile = function(pFable, pFileName, fComplete)
 						tmpLineType = 'Column';
 						tmpColumn.DataType = 'Numeric';
 						// Test if there are more than 1 parameters and the second is numeric
+						tmpColumn.Size = 'int';
 						if ((tmpLineSplit.length > 1) && (tmpLineSplit[1].match(/^[0-9]+$/) !== null))
 						{
 							// Override the default size if so
