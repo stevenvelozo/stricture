@@ -2,6 +2,8 @@
 build
 debug/model
 
+.DS_Store
+
 # Logs
 logs
 *.log
