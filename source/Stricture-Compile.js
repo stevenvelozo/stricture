@@ -20,6 +20,127 @@ var _DefaultAPISecurity = require(__dirname+'/Meadow-Endpoints-Security-Defaults
 
 var _DefaultPict = require(__dirname+'/Pict-Configuration-Defaults.js');
 
+// TODO: This is a bit of code duplication but customer pressure forced us to do it faster than we wanted
+var GenerateMeadowSchema = function(pModelData)
+{
+	var tmpTable = pModelData;
+
+	console.log('  > Table: '+tmpTable.TableName);
+
+	var tmpPrimaryKey = 'ID'+tmpTable.TableName;
+
+	// Get the primary key
+	for (var j = 0; j < tmpTable.Columns.length; j++)
+		if (tmpTable.Columns[j].DataType == 'ID')
+			tmpPrimaryKey = tmpTable.Columns[j].Column;
+
+	var tmpModel = ({
+		Scope: tmpTable.TableName,
+		DefaultIdentifier: tmpPrimaryKey,
+
+		Domain: (typeof(tmpTable.Domain) === 'undefined') ? 'Default' : tmpTable.Domain,
+
+		Schema: [],
+
+		DefaultObject: {},
+
+		JsonSchema: ({
+			title: tmpTable.TableName,
+			type: 'object',
+			properties: {},
+			required: []
+		}),
+
+		Authorization: {}
+	});
+	for (var j = 0; j < tmpTable.Columns.length; j++)
+	{
+		var tmpColumnName = tmpTable.Columns[j].Column;
+		var tmpColumnType = tmpTable.Columns[j].DataType;
+		var tmpColumnSize = tmpTable.Columns[j].hasOwnProperty('Size') ? tmpTable.Columns[j].Size : 'Default';
+
+		var tmpSchemaEntry = {Column:tmpColumnName, Type:'Default'};
+		// Dump out each column......
+		switch (tmpColumnType)
+		{
+			case 'ID':
+				tmpSchemaEntry.Type = 'AutoIdentity';
+				tmpModel.DefaultObject[tmpColumnName] = 0;
+				tmpModel.JsonSchema.properties[tmpColumnName] = {type: 'integer', size: tmpColumnSize};
+				tmpModel.JsonSchema.required.push(tmpColumnName);
+				break;
+			case 'GUID':
+				tmpSchemaEntry.Type = 'AutoGUID';
+				tmpModel.DefaultObject[tmpColumnName] = '0x0000000000000000';
+				tmpModel.JsonSchema.properties[tmpColumnName] = {type: 'string', size: tmpColumnSize};
+				break;
+			case 'ForeignKey':
+				tmpSchemaEntry.Type = 'Integer';
+				tmpModel.DefaultObject[tmpColumnName] = 0;
+				tmpModel.JsonSchema.properties[tmpColumnName] = {type: 'integer', size: tmpColumnSize};
+				tmpModel.JsonSchema.required.push(tmpColumnName);
+				break;
+			case 'Numeric':
+				tmpSchemaEntry.Type = 'Integer';
+				tmpModel.DefaultObject[tmpColumnName] = 0;
+				tmpModel.JsonSchema.properties[tmpColumnName] = {type: 'integer', size: tmpColumnSize};
+				break;
+			case 'Decimal':
+				tmpSchemaEntry.Type = 'Decimal';
+				tmpModel.DefaultObject[tmpColumnName] = 0.0;
+				tmpModel.JsonSchema.properties[tmpColumnName] = {type: 'number', size: tmpColumnSize};
+				break;
+			case 'String':
+			case 'Text':
+				tmpSchemaEntry.Type = 'String';
+				tmpModel.DefaultObject[tmpColumnName] = '';
+				tmpModel.JsonSchema.properties[tmpColumnName] = {type: 'string', size: tmpColumnSize};
+				break;
+			case 'DateTime':
+				tmpSchemaEntry.Type = 'DateTime';
+				tmpModel.DefaultObject[tmpColumnName] = null;
+				tmpModel.JsonSchema.properties[tmpColumnName] = {type: 'string', size: tmpColumnSize};
+				break;
+			case 'Boolean':
+				tmpSchemaEntry.Type = 'Boolean';
+				tmpModel.DefaultObject[tmpColumnName] = false;
+				tmpModel.JsonSchema.properties[tmpColumnName] = {type: 'boolean', size: tmpColumnSize};
+				break;
+		}
+		// Now mark up the magic columns that branch by name
+		switch (tmpColumnName)
+		{
+			case 'CreateDate':
+				tmpSchemaEntry.Type = 'CreateDate';
+				break;
+			case 'CreatingIDUser':
+				tmpSchemaEntry.Type = 'CreateIDUser';
+				break;
+			case 'UpdateDate':
+				tmpSchemaEntry.Type = 'UpdateDate';
+				break;
+			case 'UpdatingIDUser':
+				tmpSchemaEntry.Type = 'UpdateIDUser';
+				break;
+			case 'DeleteDate':
+				tmpSchemaEntry.Type = 'DeleteDate';
+				break;
+			case 'DeletingIDUser':
+				tmpSchemaEntry.Type = 'DeleteIDUser';
+				break;
+			case 'Deleted':
+				tmpSchemaEntry.Type = 'Deleted';
+				break;
+		}
+		tmpSchemaEntry.Size = tmpColumnSize;
+
+		// Now add it to the array
+		tmpModel.Schema.push(tmpSchemaEntry);
+	}
+
+	return tmpModel
+}
+
 var ReadMicroDDLFile = function(pFable, pFileName, fComplete)
 {
 	pFable.DDLParserState = (
@@ -581,6 +702,17 @@ var ReadMicroDDLFile = function(pFable, pFileName, fComplete)
 								return fStageComplete(pError);
 							}
 						);
+					},
+					(fStageComplete)=>
+					{
+						console.info(' Auto-generating inline meadow schemas');
+						for (var tmpTableKey in pFable.Stricture.Tables)
+						{
+							var tmpTable = pFable.Stricture.Tables[tmpTableKey];
+							var tmpSchema = GenerateMeadowSchema(tmpTable);
+							pFable.Stricture.Tables[tmpTableKey].MeadowSchema = tmpSchema;
+						}
+						return fStageComplete();
 					},
 					(fStageComplete)=>
 					{
