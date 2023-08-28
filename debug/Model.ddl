@@ -42,6 +42,7 @@ $Extension 4
 *Notes
 $PhotoPath 255
 .Salary
+#IDUser -> IDUser
 
 !EmployeeTerritories
 ~EmployeeID -> EmployeeID
@@ -109,3 +110,17 @@ $Fax 24
 @TerritoryID
 $TerritoryDescription 50
 
+!User
+@IDUser
+%GUIDUser 75
+$Name 128
+$LoginID 70
+$LoginPassword 70
+
+!Note
+@IDNote
+%GUIDNote
+#CreatingIDUser -> IDUser
+#OrderID -> OrderID
+$Name 255
+*Text

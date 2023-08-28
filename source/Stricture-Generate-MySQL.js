@@ -67,7 +67,13 @@ var libFS = require('fs');
 					tmpPrimaryKey = pFable.Model.Tables[tmpTable].Columns[j].Column;
 					break;
 				case 'GUID':
-					libFS.appendFileSync(tmpMySQLFile, "        "+pFable.Model.Tables[tmpTable].Columns[j].Column+" CHAR(36) NOT NULL DEFAULT '00000000-0000-0000-0000-000000000000'");
+					let tmpSize = pFable.Model.Tables[tmpTable].Columns[j].hasOwnProperty('Size') ? pFable.Model.Tables[tmpTable].Columns[j].Size : 36;
+					if (isNaN(tmpSize))
+					{
+						// Use the old default if Size is improper
+						tmpSize = 36;
+					}
+					libFS.appendFileSync(tmpMySQLFile, "        "+pFable.Model.Tables[tmpTable].Columns[j].Column+" CHAR("+tmpSize+") NOT NULL DEFAULT '0xDe'");
 					break;
 				case 'ForeignKey':
 					libFS.appendFileSync(tmpMySQLFile, "        "+pFable.Model.Tables[tmpTable].Columns[j].Column+" INT UNSIGNED NOT NULL DEFAULT '0'");

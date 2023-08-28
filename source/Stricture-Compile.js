@@ -494,6 +494,13 @@ var ReadMicroDDLFile = function(pFable, pFileName, fComplete)
 						// ### GUID
 						tmpLineType = 'Column';
 						tmpColumn.DataType = 'GUID';
+						tmpColumn.Size = '36';
+						// Test if there are more than 1 parameters and the second is numeric
+						if ((tmpLineSplit.length > 1) && (tmpLineSplit[1].match(/^[0-9]+$/) !== null))
+						{
+							// Override the default size if so
+							tmpColumn.Size = tmpLineSplit[1];
+						}
 						break;
 
 					case '~':
