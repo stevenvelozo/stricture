@@ -11,10 +11,7 @@
         "coverage": "./node_modules/istanbul/lib/cli.js cover ./node_modules/mocha/bin/_mocha -- -u tdd -R spec",
         "test": "./node_modules/mocha/bin/_mocha -u tdd -R spec",
         "tests": "npx mocha -u tdd --exit -R spec --grep",
-        "build": "npx quack build",
-        "docker-dev-build": "docker build ./ -f Dockerfile_LUXURYCode -t stricture-image:local",
-        "docker-dev-run": "docker run -it -d --name stricture-dev -p 17715:8080 -p 13154:8086 -v \"$PWD/.config:/home/coder/.config\"  -v \"$PWD:/home/coder/stricture\" -u \"$(id -u):$(id -g)\" -e \"DOCKER_USER=$USER\" stricture-image:local",
-        "docker-dev-shell": "docker exec -it stricture-dev /bin/bash"
+        "build": "npx quack build"
     },
     "repository": {
         "type": "git",

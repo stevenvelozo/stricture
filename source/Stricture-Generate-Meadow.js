@@ -144,9 +144,17 @@ var GenerateMeadow = function(pFable)
 				tmpModel.Authorization = pFable.Model.Authorization[tmpTable.TableName];
 			}
 
+			// For now, have duplicate data in the schema.
+
+			let tmpJSONSchemaInsert = JSON.parse(JSON.stringify(tmpModel));
+			// Remove the JSON Schema from the JSON Schema insert of the meadow model
+			delete tmpJSONSchemaInsert.JsonSchema;
+			// Add the JSON Schema to the model JSONSchema
+			tmpModel.JsonSchema.MeadowSchema = tmpJSONSchemaInsert;
+
 			// Now persist our schema
 			libFS.writeFile(tmpMeadowFileLocation+tmpModel.Scope+".json", JSON.stringify(tmpModel, null, 4), "utf8", pQueueCallback);
- 		},
+		},
 		function(pError)
 		{
 			if (pError)

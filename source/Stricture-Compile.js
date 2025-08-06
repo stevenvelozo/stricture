@@ -725,6 +725,34 @@ var ReadMicroDDLFile = function(pFable, pFileName, fComplete)
 					{
 						// Generate the output
 						console.info('  > Compiling the Extended Model');
+						// Decorate the current model with the right output
+						if (typeof(pFable.Stricture) === 'object')
+						{
+							if (pFable.Stricture.hasOwnProperty('Tables') && (typeof(pFable.Stricture) === 'object'))
+							{
+								let tmpTableList = Object.keys(pFable.Stricture.Tables);
+								for (let i = 0; i < tmpTableList.length; i++)
+								{
+									const tmpTableName = tmpTableList[i];
+									const tmpTableObject = pFable.Stricture.Tables[tmpTableName];
+									// For now, have duplicate data in the schema.
+									let tmpJSONSchemaInsert;
+									try
+									{
+										tmpJSONSchemaInsert = JSON.parse(JSON.stringify(tmpTableObject));
+									}
+									catch (pError)
+									{
+										pFable.log.info(`Error parsing JSON for table: ${tmpTableName} -- ${pError}`)
+									}
+									// Remove the JSON Schema from the JSON Schema insert of the meadow model
+									delete tmpJSONSchemaInsert.JsonSchema;
+									// Add the JSON Schema to the model JSONSchema
+									tmpTableObject.MeadowSchema.JsonSchema.MeadowSchema = tmpJSONSchemaInsert;
+
+								}
+							}
+						}
 						libJSONFile.writeFile(tmpStrictureModelExtendedFile,
 							pFable.Stricture,
 							{spaces: 4},
