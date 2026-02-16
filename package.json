@@ -1,6 +1,6 @@
 {
     "name": "stricture",
-    "version": "1.0.37",
+    "version": "1.0.38",
     "description": "Stricture MicroDDL JSON Parser",
     "main": "source/Stricture.js",
     "bin": {
