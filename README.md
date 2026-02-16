@@ -1,303 +1,130 @@
-Stricture
-===
+# Stricture
 
-A basic, slightly opionated data description language, inspired by Markdown.  Database engine, programming language and philosophically agnostic.
+> A Markdown-inspired data definition language and multi-target schema compiler
 
-Why, you ask?  Because it felt wrong allowing some application framework to define the database structure for data models.  This simple spec can quickly spool up a data store in multiple engines, documentation and starting source code for your framework du jour.
+Stricture is a MicroDDL compiler that turns a simple, line-based schema definition into MySQL scripts, Meadow schema files, relationship diagrams, data dictionaries and test fixtures.  Define your data model once in a human-readable format and generate everything you need for your database, API layer and documentation.
 
-Installation
----
+## Features
 
-You can install stricture globally and it will create a "stricture" command you can run.  These examples assume you have checked out this repository and are in the repository root folder, and have run npm install.
+- **MicroDDL Language** — concise, Markdown-inspired syntax for defining tables, columns, types and relationships
+- **Multi-Target Output** — generate MySQL, Meadow schemas, Markdown docs, LaTeX docs, CSV dictionaries, Graphviz diagrams and test fixtures from a single source
+- **Relationship Diagrams** — automatic Graphviz DOT generation with optional image compilation
+- **Authorization Definitions** — declare per-table, per-role security policies inline with your schema
+- **PICT UI Definitions** — define Create, List, Record, Update and Delete view configurations alongside your data model
+- **Audit Column Detection** — magic column names (CreateDate, UpdateDate, Deleted, etc.) are automatically wired into Meadow's audit tracking
+- **Include Files** — split large schemas across multiple MicroDDL files
+- **Domain Support** — organize tables into logical domains within a single model
 
-MicroDDL Key
----
+## Quick Start
 
-The Stricture MicroDDL is a simple line-based database description language.  The parser (well, not really a parser, but..) will generate the model .json file that the node.js transformation and translation scripts use to generate code and documentation.
+```bash
+# Install globally for the `stricture` CLI command
+npm install -g stricture
 
-### Symbols
-
-    !TABLE
-    @Primary Numeric Identity
-    %GUID
-    #Number
-    .Decimal
-    $String [SIZE]
-    *Text
-    &Date
-    ^Boolean
-
-### Example:
-
-This is a Users table, Contact table and Address table.  This file is located in the repository at "Examples/SimpleAddress.mddl"
-
-    !User
-    @IDUser
-    $UserName
-    $PasswordHash 42
-    $FirstName 38
-    $LastName 38
-    $Email 60
-
-    !Contact
-    @IDContact
-    #CreatingIDUser -> IDUser
-    $Name 90
-    $Email 60
-
-    !Address
-    @IDAddress
-    #CreatingIDUser -> IDUser
-    #IDContact -> IDContact
-    $Address 130
-    $City 48
-    $State 24
-    $Zip 10
-    $Phone 12
-
-
-### Conversion to JSON
-
-You can translate the MicroDDL to json by running the `MicroDDL-To-JSON.sh` command:
-
-```sh
-$ node Stricture -i Examples/SimpleAddress.mddl -c Compile
-Stricture JSON DDL Processing Utility
-Contact: Steven Velozo <steven@velozo.com>
-
----
-
-
---> Running Command: Compile
---> Compiling MicroDDL to JSON
-  > Input file:  Examples/SimpleAddress.mddl
-  > Output file: ./build/Stricture_Output.json
-  > Line #1 begins table stanza: User
-  > Line #9 begins table stanza: Contact
-  > Line #15 begins table stanza: Address
-  > Compilation complete
+# Compile a MicroDDL file through the full pipeline
+stricture -i Model.mddl -c Full
 ```
 
-The generated JSON in `Examples/SimpleAddress.mddl.json` looks like:
-```json
-{
-  "Tables":
-    [
-      {
-        "TableName": "User",
-        "Columns":
-        [
-          {"Column":"IDUser","DataType":"ID"},
-          {"Column":"UserName","DataType":"String","Size":"64"},
-          {"Column":"PasswordHash","DataType":"String","Size":"42"},
-          {"Column":"FirstName","DataType":"String","Size":"38"},
-          {"Column":"LastName","DataType":"String","Size":"38"},
-          {"Column":"Email","DataType":"String","Size":"60"}
-        ]
-      },
-      {
-        "TableName": "Contact",
-        "Columns":
-        [
-          {"Column":"IDContact","DataType":"ID"},
-          {"Column":"CreatingIDUser","DataType":"ForeignKey","Join":"IDUser"},
-          {"Column":"Ordinal","DataType":"Numeric"},
-          {"Column":"Name","DataType":"String","Size":"90"},
-          {"Column":"Email","DataType":"String","Size":"60"}
-        ]
-      },
-      {
-        "TableName": "Address",
-        "Columns":
-        [
-          {"Column":"IDAddress","DataType":"ID"},
-          {"Column":"CreatingIDUser","DataType":"ForeignKey","Join":"IDUser"},
-          {"Column":"IDContact","DataType":"ForeignKey","Join":"IDContact"},
-          {"Column":"Address","DataType":"String","Size":"130"},
-          {"Column":"City","DataType":"String","Size":"48"},
-          {"Column":"State","DataType":"String","Size":"24"},
-          {"Column":"Zip","DataType":"String","Size":"10"},
-          {"Column":"Phone","DataType":"String","Size":"12"}
-        ]
-      }
-    ]
-}
+Or run directly from a local checkout:
+
+```bash
+node source/Stricture.js -i Model.mddl -c Full -f ./model/ -o MeadowModel
 ```
 
-### Diagrams
+## Installation
 
-You can generate diagrams from this model.  Stricture uses the [graphviz tool chain](http://www.graphviz.org/) to generate graphs.  You must have graphviz installed and in your path to generate diagram images.
-
-```sh
-$ node Stricture -i "./build/Stricture_Output.json" -c RelationshipsFull -g -l
-Stricture JSON DDL Processing Utility
-Contact: Steven Velozo <steven@velozo.com>
-
----
-
-
---> Running Command: RelationshipsFull
-Loaded graph generation file
---> Loading ./build/Stricture_Output.json
-  > file loaded successfully.
---> ... creating contextual Index ==> Table lookups ...
-  > Adding the table User to the lookup cache with the key IDUser
-  > Adding the table Contact to the lookup cache with the key IDContact
-  > Adding the table Address to the lookup cache with the key IDAddress
-  > indices built successfully.
-  > executing script: function
---> Building the Relationships graph...
---> ... building the connected graph DOT file ...
-  > Header
-  > Table Nodes
-  > Connections
-  > Closing
---> DOT generation complete!
---> Beginning image generation to ./build/Stricture_Output.png...
-  > command: dot -Tpng ./build/Stricture_Output.dot > ./build/Stricture_Output.png
-Stricture Command Execution: 12ms
-  > Image generation complete
---> Loading image ./build/Stricture_Output.png in your OS.  Hopefully.
->>> Image Generation: 2ms
+```bash
+npm install stricture
 ```
 
-Which creates:
+## How It Works
 
-![Simple Table Entity Connections](https://github.com/stevenvelozo/stricture/raw/master/Examples/SimpleAddress.png)
-
-
-More Complex Examples
----------------------
-
-The infamous Northwind database has been converted to MicroDDL as an example.  It isn't 100% generating the Northwind SQL because the DDL spec doesn't cover all features used yet.
-
-You can find it in `Examples/Northwind.mddl` ... the graph for this model is:
-
-![Complex Table Entity Connections](https://github.com/stevenvelozo/stricture/raw/master/Examples/Northwind.png)
-
-
-### MySQL
-
-Generating MySQL Create statements is easy peasy, just run this:
-
-```sh
-$ node Stricture -i "./build/Stricture_Output.json" -c MySQL
-Stricture JSON DDL Processing Utility
-Contact: Steven Velozo <steven@velozo.com>
-
----
-
-
---> Running Command: MySQL
---> Loading ./build/Stricture_Output.json
-  > file loaded successfully.
---> ... creating contextual Index ==> Table lookups ...
-  > Adding the table User to the lookup cache with the key IDUser
-  > Adding the table Contact to the lookup cache with the key IDContact
-  > Adding the table Address to the lookup cache with the key IDAddress
-  > indices built successfully.
-  > executing script: function
---> Building the table create file...
-  > User
-  > Contact
-  > Address
-Stricture Command Execution: 9ms
-```
-
-Which generates some MySQL create statements in the file 'build/Stricture_Output.mysql.sql' that look like the following:
-
-    --   [ Categories ]
-    CREATE TABLE IF NOT EXISTS
-        Categories
-        (
-            CategoryID INT UNSIGNED NOT NULL AUTO_INCREMENT,
-            CategoryName CHAR(15) NOT NULL DEFAULT '',
-            Description TEXT,
-
-            PRIMARY KEY (CategoryID)
-        );
-
-
-
-    --   [ CustomerCustomerDemo ]
-    CREATE TABLE IF NOT EXISTS
-        CustomerCustomerDemo
-        (
-            CustomerID INT NOT NULL DEFAULT '0',
-            CustomerTypeID INT NOT NULL DEFAULT '0'
-        );
-
-### Special Columns
-
-The retold framework as a whole has a few concepts for each record, which provide convenience features for developers.  These are meant to maintain basic record audit tracking.
-
-##### Create Tracking
-
-By including either of these fields, queries will automatically stamp the user ID and create date for the record.  If they are not in your schema, nothing happens.
+Stricture uses a two-phase approach: first compile the MicroDDL text into an intermediate JSON model, then run one or more generators against that model.
 
 ```
+MicroDDL Source (.mddl)
+  └── Compile
+        ├── MeadowModel.json              (basic table model)
+        ├── MeadowModel-Extended.json      (full model with auth + PICT)
+        └── MeadowModel-PICT.json          (UI definitions)
+              │
+              ├── MySQL Generator       → CREATE TABLE scripts
+              ├── Meadow Generator      → per-table schema JSON files
+              ├── Markdown Generator    → data dictionary docs
+              ├── LaTeX Generator       → printable documentation
+              ├── CSV Generator         → spreadsheet-friendly dictionary
+              ├── Graph Generator       → Graphviz relationship diagrams
+              ├── Auth Chart Generator  → role/permission CSV matrix
+              ├── Pict Generator        → RequireJS UI model
+              └── Test Object Generator → fixture JSON files
+```
+
+The `Full` command chains Compile, MySQL, Meadow, Markdown and Diagrams in a single pass.
+
+## MicroDDL Syntax
+
+### Column Type Symbols
+
+| Symbol | Type       | MySQL Mapping                          | Default Size |
+|--------|-----------|----------------------------------------|-------------|
+| `@`    | ID         | `INT UNSIGNED NOT NULL AUTO_INCREMENT` | —           |
+| `%`    | GUID       | `CHAR(n)`                              | 36          |
+| `~`    | ForeignKey | `INT UNSIGNED NOT NULL DEFAULT '0'`    | —           |
+| `#`    | Numeric    | `INT NOT NULL DEFAULT '0'`             | int         |
+| `.`    | Decimal    | `DECIMAL(p,s)`                         | 10,3        |
+| `$`    | String     | `CHAR(n) NOT NULL DEFAULT ''`          | 64          |
+| `*`    | Text       | `TEXT`                                  | —           |
+| `&`    | DateTime   | `DATETIME`                              | —           |
+| `^`    | Boolean    | `TINYINT NOT NULL DEFAULT '0'`         | —           |
+
+### Example
+
+```
+!User
+@IDUser
+%GUIDUser
+$UserName 128
+$Email 256
+&CreateDate
+#CreatingIDUser -> IDUser
+&UpdateDate
+#UpdatingIDUser -> IDUser
+^Deleted
+
+!Contact
+@IDContact
+#IDUser -> IDUser
+$Name 90
+$Email 60
 &CreateDate
 #CreatingIDUser -> IDUser
 ```
 
-##### Modification Tracking
+### Joins
 
-By including either of these fields, queries will automatically stamp the user ID and update date for any change to the record.  If they are not in your schema, nothing happens.
-
-```
-&UpdateDate
-#UpdatingIDUser -> IDUser
-```
-
-
-##### Deleted Bit
-
-The deleted bit means that meadow delete operations will not actually delete the record, just flip this to true.
+Declare foreign key relationships with `->`:
 
 ```
-^Deleted
+#IDUser -> IDUser
 ```
 
-
-##### Delete Tracking
-
-By including either of these fields, queries will automatically stamp the user ID and update date for deletion of the record.  If they are not in your schema, nothing happens.
+### Descriptions
 
 ```
-&DeleteDate
-#DeletingIDUser -> IDUser
+>Table description goes here
+"ColumnName "Column description goes here"
 ```
 
+### Include Files and Domains
 
-##### Customer Security
+```
+[Domain Reporting]
+[Include shared-tables.mddl]
+```
 
-If a record includes the `IDCustomer` field, it is elligible for being authorized with the `MyCustomer` authorizer.  This is handy for multi-tennant applications, where tenancy is desired for most record types by default.
+### Authorization Stanzas
 
-### Meadow Schema Files
-
-    You can also generate meadow schema files!  Just run stricture with the 'Meadow' command.
-
-### Meadow Authorizers
-
-Meadow has the capability of authorizing endpoints through built-in authorize functions, or having mix-in functions added later.  These authorizers are based on hashes.  By using an extended stricture stanza, you can define specific authorizers for endpoint/user combinations.
-
-The roles available to meadow endpoints are:
-
-- *Role 0*: Unauthenticated
-- *Role 1*: User
-- *Role 2*: Manager
-- *Role 3*: Director
-- *Role 4*: Executive
-- *Role 5*: Administrator
-
-The built-in authorizers include:
-
-1. *Allow* - no matter what, allow the operation
-2. *Deny* - no matter what, deny the operation
-3. *Mine* - only allow me to interact with my records
-4. *MyCustomer* - only allow me to interact with records that are my customer
-
-A basic example of this might be controlling access to the inventory table:
+Define per-table security policies with three tokens per line: `Permission Role Authorizer`
 
 ```
 [Authorization Inventory]
@@ -307,10 +134,114 @@ Read Executive Deny
 Read Administrator Allow
 ```
 
-This will setup the security authorizers to allow Administrators to `Read` all inventory, Managers to only `Read` inventory for their customerID and Users to `Read` only inventory they have created.  As a bonus, pesky executives cannot `Read` anything.
+Use `*` as the role to apply an authorizer to all roles at once.
 
-You can also comma separate authorizers, and multiple will run.  Or even add your own hashes -- just make sure you also inject that authorizer into the meadow endpoint object.
+### PICT UI Stanzas
 
-# Change Log
+```
+[PICT-List User]
+(Users)
+UserName Type:text Label:"User Name"
+Email
+```
 
-* _2016-08-12_: Added the concept of Domains to models
+## Commands
+
+| Command               | Description                                          |
+|-----------------------|------------------------------------------------------|
+| `Full`                | End-to-end pipeline: Compile + MySQL + Meadow + Docs + Diagrams |
+| `Compile`             | Parse MicroDDL to JSON model files                   |
+| `MySQL`               | Generate MySQL CREATE TABLE statements               |
+| `MySQL-Migrate`       | Generate INSERT...SELECT migration stubs             |
+| `Meadow`              | Generate per-table Meadow schema JSON files          |
+| `Documentation`       | Generate Markdown data dictionary                    |
+| `DataDictionary`      | Generate LaTeX data dictionary                       |
+| `DictionaryCSV`       | Generate CSV data dictionary                         |
+| `Relationships`       | Generate Graphviz diagram (excluding audit joins)    |
+| `RelationshipsFull`   | Generate Graphviz diagram (including audit joins)    |
+| `Authorization`       | Generate CSV authorization/permission matrix         |
+| `Pict`                | Generate RequireJS PICT UI model                     |
+| `TestObjectContainers`| Generate per-table test fixture JSON files           |
+| `Info`                | List all tables in the model (default fallback)      |
+
+## Command Line Options
+
+| Flag | Option               | Default          | Description                          |
+|------|----------------------|------------------|--------------------------------------|
+| `-c` | Command              | `Full`           | Command to execute                   |
+| `-i` | InputFileName        | `./Model.ddl`    | Input MicroDDL or JSON model file    |
+| `-f` | OutputLocation       | `./model/`       | Output directory                     |
+| `-o` | OutputFileName       | `MeadowModel`    | Output file prefix                   |
+| `-g` | AutomaticallyCompile | `false`          | Auto-generate PNG from DOT files     |
+| `-l` | AutomaticallyLoad    | `false`          | Auto-open generated images in the OS |
+
+## Special Columns
+
+Certain column names are automatically recognized by Meadow for audit tracking:
+
+| Column Name      | Behavior                                 |
+|------------------|------------------------------------------|
+| `CreateDate`     | Auto-stamped on record creation          |
+| `CreatingIDUser` | Auto-stamped with creating user's ID     |
+| `UpdateDate`     | Auto-stamped on record update            |
+| `UpdatingIDUser` | Auto-stamped with updating user's ID     |
+| `DeleteDate`     | Auto-stamped on soft delete              |
+| `DeletingIDUser` | Auto-stamped with deleting user's ID     |
+| `Deleted`        | Soft delete flag (meadow filters these)  |
+| `IDCustomer`     | Enables `MyCustomer` multi-tenant authz  |
+
+## Meadow Authorization
+
+Roles and their default security policies:
+
+| Role             | Default Policy                        |
+|------------------|---------------------------------------|
+| Unauthenticated  | Deny all                              |
+| Readonly         | Allow reads, deny writes              |
+| User             | MyCustomer reads, Mine writes         |
+| Manager          | MyCustomer reads, Mine writes         |
+| Director         | MyCustomer all                        |
+| Executive        | MyCustomer all                        |
+| Administrator    | Allow all                             |
+
+Built-in authorizers: `Allow`, `Deny`, `Mine`, `MyCustomer`
+
+## Testing
+
+```bash
+npm test
+npm run coverage
+```
+
+## Docker Development Environment
+
+```bash
+npm run docker-dev-build
+npm run docker-dev-run
+```
+
+## Documentation
+
+Detailed command documentation is available in the `docs/` folder:
+
+| Document | Description |
+|----------|-------------|
+| [Stricture-Legacy-Compiler.md](docs/Stricture-Legacy-Compiler.md) | Compiler overview and output structure |
+| [MicroDDL-Syntax.md](docs/MicroDDL-Syntax.md) | Full MicroDDL language reference |
+| [Command-Compile.md](docs/Command-Compile.md) | Compile command |
+| [Command-Full.md](docs/Command-Full.md) | Full pipeline command |
+| [Command-MySQL.md](docs/Command-MySQL.md) | MySQL generator |
+| [Command-Meadow.md](docs/Command-Meadow.md) | Meadow schema generator |
+| [Command-Documentation.md](docs/Command-Documentation.md) | Markdown documentation generator |
+| [Command-Relationships.md](docs/Command-Relationships.md) | Graphviz diagram generator |
+| [Command-Authorization.md](docs/Command-Authorization.md) | Authorization chart generator |
+| [Docuserve-Configuration.md](docs/Docuserve-Configuration.md) | Docuserve file format reference (cover, sidebar, topbar, catalog, search index) |
+
+## Related Packages
+
+- [meadow](https://github.com/stevenvelozo/meadow) — Data access layer that consumes Stricture schemas
+- [foxhound](https://github.com/stevenvelozo/foxhound) — Query DSL for SQL generation
+- [meadow-endpoints](https://github.com/stevenvelozo/meadow-endpoints) — Automatic REST endpoint generation from Meadow schemas
+- [fable](https://github.com/stevenvelozo/fable) — Core service framework
+- [orator](https://github.com/stevenvelozo/orator) — API server abstraction
+- [pict](https://github.com/stevenvelozo/pict) — MVC framework that uses PICT definitions from Stricture
