@@ -239,9 +239,14 @@ Detailed command documentation is available in the `docs/` folder:
 
 ## Related Packages
 
-- [meadow](https://github.com/stevenvelozo/meadow) — Data access layer that consumes Stricture schemas
-- [foxhound](https://github.com/stevenvelozo/foxhound) — Query DSL for SQL generation
-- [meadow-endpoints](https://github.com/stevenvelozo/meadow-endpoints) — Automatic REST endpoint generation from Meadow schemas
-- [fable](https://github.com/stevenvelozo/fable) — Core service framework
-- [orator](https://github.com/stevenvelozo/orator) — API server abstraction
-- [pict](https://github.com/stevenvelozo/pict) — MVC framework that uses PICT definitions from Stricture
+- [meadow](https://github.com/stevenvelozo/meadow) - Data access and ORM
+- [foxhound](https://github.com/stevenvelozo/foxhound) - Query DSL for SQL generation
+- [fable](https://github.com/stevenvelozo/fable) - Application services framework
+
+## License
+
+MIT
+
+## Contributing
+
+Pull requests are welcome. For details on our code of conduct, contribution process, and testing requirements, see the [Retold Contributing Guide](https://github.com/stevenvelozo/retold/blob/main/docs/contributing.md).
