@@ -1,48 +1,70 @@
 /**
-* Stricture MicroDDL JSON Parser
-*
-* @license     MIT
-*
-* @author      Steven Velozo <steven@velozo.com>
-*
-* @description Processes the JSON Data Description into documentation and SQL statements
-*/
+ * Stricture - MicroDDL Compiler and Multi-Target Schema Code Generator
+ *
+ * Main module export. Extends Pict (which extends Fable) and registers all
+ * Stricture service types so they can be instantiated on demand.
+ *
+ * Usage (programmatic):
+ *   const Stricture = require('stricture');
+ *   let tmpStricture = new Stricture({ InputFileName: './Model.ddl' });
+ *   let tmpCompiler = tmpStricture.instantiateServiceProvider('StrictureCompiler');
+ *   tmpCompiler.compileFile('./Model.ddl', './model/', 'MeadowModel', (pError) => { ... });
+ *
+ * @license MIT
+ * @author Steven Velozo <steven@velozo.com>
+ */
+const libPict = require('pict');
 
-var libMkdirp = require('mkdirp');
-
-var Stricture = function(pSettings)
+/**
+ * The main Stricture class -- registers all service types on construction.
+ *
+ * Service types registered:
+ *   - StrictureModelLoader   -- loads compiled JSON models
+ *   - StrictureCompiler      -- compiles MicroDDL to JSON
+ *   - StrictureGenerateMySQL -- MySQL CREATE TABLE statements
+ *   - StrictureGenerateMySQLMigrate -- MySQL migration stubs
+ *   - StrictureGenerateMeadow -- per-table Meadow schema JSON
+ *   - StrictureGenerateMarkdown -- Markdown documentation
+ *   - StrictureGenerateLaTeX -- LaTeX documentation
+ *   - StrictureGenerateDictionaryCSV -- CSV data dictionary
+ *   - StrictureGenerateModelGraph -- GraphViz DOT relationship diagrams
+ *   - StrictureGenerateAuthChart -- CSV authorization chart
+ *   - StrictureGeneratePict -- AMD/RequireJS PICT model
+ *   - StrictureGenerateTestFixtures -- test fixture JSON
+ */
+class Stricture extends libPict
 {
-	var _Fable = require('fable').new(pSettings);
-
-	// Merge in any default settings that haven't been passed in
-	_Fable.settingsManager.fill(require('./Stricture-Options.js'));
-
-	// Make sure the settings contain an input file
-	if (_Fable.settings.InputFileName === null)
+	/**
+	 * @param {Object} pSettings - Settings hash passed through to Pict/Fable
+	 */
+	constructor(pSettings)
 	{
-		console.log('ERROR: You must provide at least an input filename for the DDL JSON file.');
-		console.log('       For Example: node Stricture.js -i "BestDDLEvar.mddl"');
-		process.exit(1);
-	}
+		super(pSettings);
 
-	// Check if the output folder exists, create it if it doesn't.
-	libMkdirp(_Fable.settings.OutputLocation,
-		function (pError)
+		// Initialize AppData namespace for model storage
+		if (!this.AppData)
 		{
-			if (pError)
-			{
-				console.log('ERROR: You must provide at least an input filename for the DDL JSON file.');
-				console.log('       For Example: node Stricture.js -i "BestDDLEvar.mddl"');
-				process.exit(1);
-			}
-			else
-			{
-				// Load the JSON, then run the command with the model passed in
-				let tmpRunPrepare = require('./Stricture-Run-Prepare.js');
-				tmpRunPrepare(_Fable, require('./Stricture-Run-ExecuteCommand.js'));
-			}
+			this.AppData = {};
 		}
-	);
-};
+
+		// -- Register all Stricture service types --
+
+		// Core services
+		this.addServiceType('StrictureModelLoader', require('./services/Stricture-Service-ModelLoader.js'));
+		this.addServiceType('StrictureCompiler', require('./services/Stricture-Service-Compiler.js'));
+
+		// Generator services
+		this.addServiceType('StrictureGenerateMySQL', require('./services/Stricture-Service-GenerateMySQL.js'));
+		this.addServiceType('StrictureGenerateMySQLMigrate', require('./services/Stricture-Service-GenerateMySQLMigrate.js'));
+		this.addServiceType('StrictureGenerateMeadow', require('./services/Stricture-Service-GenerateMeadow.js'));
+		this.addServiceType('StrictureGenerateMarkdown', require('./services/Stricture-Service-GenerateMarkdown.js'));
+		this.addServiceType('StrictureGenerateLaTeX', require('./services/Stricture-Service-GenerateLaTeX.js'));
+		this.addServiceType('StrictureGenerateDictionaryCSV', require('./services/Stricture-Service-GenerateDictionaryCSV.js'));
+		this.addServiceType('StrictureGenerateModelGraph', require('./services/Stricture-Service-GenerateModelGraph.js'));
+		this.addServiceType('StrictureGenerateAuthChart', require('./services/Stricture-Service-GenerateAuthChart.js'));
+		this.addServiceType('StrictureGeneratePict', require('./services/Stricture-Service-GeneratePict.js'));
+		this.addServiceType('StrictureGenerateTestFixtures', require('./services/Stricture-Service-GenerateTestFixtures.js'));
+	}
+}
 
 module.exports = Stricture;

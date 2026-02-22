@@ -1,0 +1,44 @@
+%% Data Model -- Generated 2026-02-18T18:34:51.246Z
+\part{Table Definitions}
+
+\section{User}
+\begin{small}
+\begin{tabularx}{\textwidth}{ l l l X }
+\textbf{Column Name} & \textbf{Size} & \textbf{Data Type} & \textbf{Notes} \\ \hline 
+IDUser &  & ID &  \\ 
+UserName & 64 & String &  \\ 
+PasswordHash & 42 & String &  \\ 
+FirstName & 38 & String &  \\ 
+LastName & 38 & String &  \\ 
+Email & 60 & String &  \\ 
+\end{tabularx}
+\end{small}
+
+\section{Contact}
+\begin{small}
+\begin{tabularx}{\textwidth}{ l l l X }
+\textbf{Column Name} & \textbf{Size} & \textbf{Data Type} & \textbf{Notes} \\ \hline 
+IDContact &  & ID &  \\ 
+CreatingIDUser & int & Numeric & Joined to User.IDUser
+ \\ 
+Name & 90 & String &  \\ 
+Email & 60 & String &  \\ 
+\end{tabularx}
+\end{small}
+
+\section{Address}
+\begin{small}
+\begin{tabularx}{\textwidth}{ l l l X }
+\textbf{Column Name} & \textbf{Size} & \textbf{Data Type} & \textbf{Notes} \\ \hline 
+IDAddress &  & ID &  \\ 
+CreatingIDUser & int & Numeric & Joined to User.IDUser
+ \\ 
+IDContact & int & Numeric & Joined to Contact.IDContact
+ \\ 
+Address & 130 & String &  \\ 
+City & 48 & String &  \\ 
+State & 24 & String &  \\ 
+Zip & 10 & String &  \\ 
+Phone & 12 & String &  \\ 
+\end{tabularx}
+\end{small}

@@ -1,14 +1,13 @@
 #!/usr/bin/env node
 /**
- * Stricture
+ * Stricture CLI Entry Point
  *
+ * MicroDDL compiler and multi-target schema code generator.
  * Database create statements, documentation, graphs, mock objects
- * for unit tests and a bunch more.
+ * for unit tests and more.
  *
- * See <https://github.com/trentm/node-bunyan>.
- *
- * -*- mode: js -*-
- * vim: expandtab:ts=4:sw=4
+ * @license MIT
+ * @author Steven Velozo <steven@velozo.com>
  */
-
-var strictureExecution = require('../Stricture.js');
+const libStrictureCLI = require('../source/Stricture-CLI.js');
+libStrictureCLI.run(process.argv);

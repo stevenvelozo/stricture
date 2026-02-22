@@ -4,16 +4,40 @@
 
 Stricture is a MicroDDL compiler that turns a simple, line-based schema definition into MySQL scripts, Meadow schema files, relationship diagrams, data dictionaries and test fixtures.  Define your data model once in a human-readable format and generate everything you need for your database, API layer and documentation.
 
+## What's New in v3
+
+Stricture 3.0 is a complete modernization built on the Pict/Fable 3.x service architecture:
+
+- **Service-Oriented Architecture** -- each compiler stage and generator is a standalone Fable service, composable and testable in isolation
+- **Modern CLI** -- Commander.js-based CLI via `pict-service-commandlineutility` with subcommands, cascading configuration, and built-in help
+- **Interactive TUI** -- browse your data model in a blessed-based terminal interface with table navigation, column inspection and live DDL preview
+- **Programmatic API** -- `require('stricture')` returns a Pict instance with all service types pre-registered for use in build scripts and pipelines
+
+### Migrating from v1/v2
+
+The legacy `yargs`-based CLI (`stricture -i Model.mddl -c Full`) has been replaced with Commander subcommands:
+
+```bash
+# v1/v2 (legacy)
+stricture -i Model.mddl -c Full -f ./model/ -o MeadowModel
+
+# v3
+stricture full Model.mddl -o ./model/ -p MeadowModel
+```
+
+The JSON model format is unchanged -- v3 reads and writes the same `*.json`, `*-Extended.json` and `*-PICT.json` files.
+
 ## Features
 
-- **MicroDDL Language** — concise, Markdown-inspired syntax for defining tables, columns, types and relationships
-- **Multi-Target Output** — generate MySQL, Meadow schemas, Markdown docs, LaTeX docs, CSV dictionaries, Graphviz diagrams and test fixtures from a single source
-- **Relationship Diagrams** — automatic Graphviz DOT generation with optional image compilation
-- **Authorization Definitions** — declare per-table, per-role security policies inline with your schema
-- **PICT UI Definitions** — define Create, List, Record, Update and Delete view configurations alongside your data model
-- **Audit Column Detection** — magic column names (CreateDate, UpdateDate, Deleted, etc.) are automatically wired into Meadow's audit tracking
-- **Include Files** — split large schemas across multiple MicroDDL files
-- **Domain Support** — organize tables into logical domains within a single model
+- **MicroDDL Language** -- concise, Markdown-inspired syntax for defining tables, columns, types and relationships
+- **Multi-Target Output** -- generate MySQL, Meadow schemas, Markdown docs, LaTeX docs, CSV dictionaries, Graphviz diagrams and test fixtures from a single source
+- **Relationship Diagrams** -- automatic Graphviz DOT generation with optional image compilation
+- **Authorization Definitions** -- declare per-table, per-role security policies inline with your schema
+- **PICT UI Definitions** -- define Create, List, Record, Update and Delete view configurations alongside your data model
+- **Audit Column Detection** -- magic column names (CreateDate, UpdateDate, Deleted, etc.) are automatically wired into Meadow's audit tracking
+- **Include Files** -- split large schemas across multiple MicroDDL files
+- **Domain Support** -- organize tables into logical domains within a single model
+- **Interactive TUI** -- browse tables, inspect columns and preview generated DDL from the terminal
 
 ## Quick Start
 
@@ -22,13 +46,14 @@ Stricture is a MicroDDL compiler that turns a simple, line-based schema definiti
 npm install -g stricture
 
 # Compile a MicroDDL file through the full pipeline
-stricture -i Model.mddl -c Full
-```
+stricture full Model.mddl
 
-Or run directly from a local checkout:
+# Or compile only, then generate MySQL separately
+stricture compile Model.mddl -o ./model/ -p MeadowModel
+stricture mysql ./model/MeadowModel-Extended.json -o ./model/
 
-```bash
-node source/Stricture.js -i Model.mddl -c Full -f ./model/ -o MeadowModel
+# Launch the interactive TUI
+stricture tui Model.mddl
 ```
 
 ## Installation
@@ -43,23 +68,76 @@ Stricture uses a two-phase approach: first compile the MicroDDL text into an int
 
 ```
 MicroDDL Source (.mddl)
-  └── Compile
-        ├── MeadowModel.json              (basic table model)
-        ├── MeadowModel-Extended.json      (full model with auth + PICT)
-        └── MeadowModel-PICT.json          (UI definitions)
-              │
-              ├── MySQL Generator       → CREATE TABLE scripts
-              ├── Meadow Generator      → per-table schema JSON files
-              ├── Markdown Generator    → data dictionary docs
-              ├── LaTeX Generator       → printable documentation
-              ├── CSV Generator         → spreadsheet-friendly dictionary
-              ├── Graph Generator       → Graphviz relationship diagrams
-              ├── Auth Chart Generator  → role/permission CSV matrix
-              ├── Pict Generator        → RequireJS UI model
-              └── Test Object Generator → fixture JSON files
+  |
+  v
+Compiler Service (StrictureCompiler)
+  |
+  +-- MeadowModel.json              (basic table model)
+  +-- MeadowModel-Extended.json     (full model with auth + PICT + inline Meadow schemas)
+  +-- MeadowModel-PICT.json         (UI definitions)
+        |
+        +-- MySQL Generator           -> CREATE TABLE scripts
+        +-- MySQL Migrate Generator   -> INSERT...SELECT migration stubs
+        +-- Meadow Generator          -> per-table schema JSON files
+        +-- Markdown Generator        -> data dictionary docs
+        +-- LaTeX Generator           -> printable documentation
+        +-- CSV Dictionary Generator  -> spreadsheet-friendly dictionary
+        +-- Graph Generator           -> Graphviz relationship diagrams
+        +-- Auth Chart Generator      -> role/permission CSV matrix
+        +-- Pict Generator            -> RequireJS UI model
+        +-- Test Fixtures Generator   -> per-table fixture JSON files
 ```
 
-The `Full` command chains Compile, MySQL, Meadow, Markdown and Diagrams in a single pass.
+The `full` command chains Compile, MySQL, Meadow, Markdown and Diagrams in a single pass.
+
+## Programmatic API
+
+```javascript
+const Stricture = require('stricture');
+
+// Create an instance -- all 12 service types are registered automatically
+let tmpStricture = new Stricture({ Product: 'MyBuild' });
+
+// Compile a MicroDDL file to JSON
+let tmpCompiler = tmpStricture.instantiateServiceProvider('StrictureCompiler');
+tmpCompiler.compileFile('./Model.mddl', './model/', 'MeadowModel', (pError) =>
+{
+    if (pError) { console.error(pError); return; }
+
+    // Load the compiled extended model
+    let tmpLoader = tmpStricture.instantiateServiceProvider('StrictureModelLoader');
+    tmpLoader.loadFromFile('./model/MeadowModel-Extended.json', (pError) =>
+    {
+        if (pError) { console.error(pError); return; }
+
+        // Generate MySQL CREATE scripts
+        let tmpMySQL = tmpStricture.instantiateServiceProvider('StrictureGenerateMySQL');
+        tmpMySQL.generate(
+            { OutputLocation: './model/', OutputFileName: 'MeadowModel' },
+            (pError) =>
+            {
+                console.log('Done!');
+            });
+    });
+});
+```
+
+### Available Service Types
+
+| Service Type | Purpose |
+|---|---|
+| `StrictureCompiler` | Compile MicroDDL to JSON model files |
+| `StrictureModelLoader` | Load compiled JSON and build index lookups |
+| `StrictureGenerateMySQL` | MySQL CREATE TABLE statements |
+| `StrictureGenerateMySQLMigrate` | MySQL INSERT...SELECT migration stubs |
+| `StrictureGenerateMeadow` | Per-table Meadow schema JSON files |
+| `StrictureGenerateMarkdown` | Markdown data dictionary documentation |
+| `StrictureGenerateLaTeX` | LaTeX data dictionary documentation |
+| `StrictureGenerateDictionaryCSV` | CSV data dictionary |
+| `StrictureGenerateModelGraph` | GraphViz DOT relationship diagrams |
+| `StrictureGenerateAuthChart` | CSV authorization/permission matrix |
+| `StrictureGeneratePict` | AMD/RequireJS PICT UI model |
+| `StrictureGenerateTestFixtures` | Per-table test fixture JSON files |
 
 ## MicroDDL Syntax
 
@@ -67,15 +145,15 @@ The `Full` command chains Compile, MySQL, Meadow, Markdown and Diagrams in a sin
 
 | Symbol | Type       | MySQL Mapping                          | Default Size |
 |--------|-----------|----------------------------------------|-------------|
-| `@`    | ID         | `INT UNSIGNED NOT NULL AUTO_INCREMENT` | —           |
+| `@`    | ID         | `INT UNSIGNED NOT NULL AUTO_INCREMENT` | --           |
 | `%`    | GUID       | `CHAR(n)`                              | 36          |
-| `~`    | ForeignKey | `INT UNSIGNED NOT NULL DEFAULT '0'`    | —           |
+| `~`    | ForeignKey | `INT UNSIGNED NOT NULL DEFAULT '0'`    | --           |
 | `#`    | Numeric    | `INT NOT NULL DEFAULT '0'`             | int         |
 | `.`    | Decimal    | `DECIMAL(p,s)`                         | 10,3        |
 | `$`    | String     | `CHAR(n) NOT NULL DEFAULT ''`          | 64          |
-| `*`    | Text       | `TEXT`                                  | —           |
-| `&`    | DateTime   | `DATETIME`                              | —           |
-| `^`    | Boolean    | `TINYINT NOT NULL DEFAULT '0'`         | —           |
+| `*`    | Text       | `TEXT`                                  | --           |
+| `&`    | DateTime   | `DATETIME`                              | --           |
+| `^`    | Boolean    | `TINYINT NOT NULL DEFAULT '0'`         | --           |
 
 ### Example
 
@@ -102,10 +180,11 @@ $Email 60
 
 ### Joins
 
-Declare foreign key relationships with `->`:
+Declare foreign key relationships with `->` (column-level) or `=>` (table-level):
 
 ```
 #IDUser -> IDUser
+~CustomerID => Customers
 ```
 
 ### Descriptions
@@ -138,42 +217,108 @@ Use `*` as the role to apply an authorizer to all roles at once.
 
 ### PICT UI Stanzas
 
+Define view configurations for Create, List, Record, Update and Delete operations:
+
 ```
 [PICT-List User]
 (Users)
 UserName Type:text Label:"User Name"
 Email
+
+[PICT-Record Contact]
+(Contact <%= Name %>)
+#Person
+Name
+#Address
+City Title:"City of Residence"
+
+[PICT-Delete Address]
+:ConfirmationMessage = Are you sure?
 ```
 
-## Commands
+## CLI Commands
 
-| Command               | Description                                          |
-|-----------------------|------------------------------------------------------|
-| `Full`                | End-to-end pipeline: Compile + MySQL + Meadow + Docs + Diagrams |
-| `Compile`             | Parse MicroDDL to JSON model files                   |
-| `MySQL`               | Generate MySQL CREATE TABLE statements               |
-| `MySQL-Migrate`       | Generate INSERT...SELECT migration stubs             |
-| `Meadow`              | Generate per-table Meadow schema JSON files          |
-| `Documentation`       | Generate Markdown data dictionary                    |
-| `DataDictionary`      | Generate LaTeX data dictionary                       |
-| `DictionaryCSV`       | Generate CSV data dictionary                         |
-| `Relationships`       | Generate Graphviz diagram (excluding audit joins)    |
-| `RelationshipsFull`   | Generate Graphviz diagram (including audit joins)    |
-| `Authorization`       | Generate CSV authorization/permission matrix         |
-| `Pict`                | Generate RequireJS PICT UI model                     |
-| `TestObjectContainers`| Generate per-table test fixture JSON files           |
-| `Info`                | List all tables in the model (default fallback)      |
+```bash
+stricture [command] [input_file] [options]
+```
 
-## Command Line Options
+| Command | Alias | Description |
+|---|---|---|
+| `full` | | End-to-end pipeline: Compile + MySQL + Meadow + Docs + Diagrams |
+| `compile` | `c` | Parse MicroDDL to JSON model files |
+| `mysql` | | Generate MySQL CREATE TABLE statements |
+| `mysql-migrate` | | Generate INSERT...SELECT migration stubs |
+| `meadow` | | Generate per-table Meadow schema JSON files |
+| `documentation` | `doc` | Generate Markdown data dictionary |
+| `data-dictionary` | `dd` | Generate LaTeX data dictionary |
+| `dictionary-csv` | `csv` | Generate CSV data dictionary |
+| `relationships` | `rel` | Generate Graphviz diagram (excluding audit joins) |
+| `relationships-full` | `relf` | Generate Graphviz diagram (including audit joins) |
+| `authorization` | `auth` | Generate CSV authorization/permission matrix |
+| `pict` | | Generate RequireJS PICT UI model |
+| `test-fixtures` | `tf` | Generate per-table test fixture JSON files |
+| `info` | `i` | List all tables in the model |
+| `tui` | | Launch the interactive terminal UI |
+| `explain-config` | | Show the cascading configuration |
 
-| Flag | Option               | Default          | Description                          |
-|------|----------------------|------------------|--------------------------------------|
-| `-c` | Command              | `Full`           | Command to execute                   |
-| `-i` | InputFileName        | `./Model.ddl`    | Input MicroDDL or JSON model file    |
-| `-f` | OutputLocation       | `./model/`       | Output directory                     |
-| `-o` | OutputFileName       | `MeadowModel`    | Output file prefix                   |
-| `-g` | AutomaticallyCompile | `false`          | Auto-generate PNG from DOT files     |
-| `-l` | AutomaticallyLoad    | `false`          | Auto-open generated images in the OS |
+### CLI Options
+
+Each command accepts:
+
+| Option | Description | Default |
+|---|---|---|
+| `[input_file]` | MicroDDL or compiled JSON model | `./Model.ddl` |
+| `-o, --output <folder>` | Output directory | `./model/` |
+| `-p, --prefix <name>` | Output file prefix | `MeadowModel` |
+| `-g, --generate-image` | Auto-compile DOT to PNG (full/rel commands) | false |
+
+### Cascading Configuration
+
+The CLI loads settings from three sources (later sources override earlier ones):
+
+1. Built-in defaults
+2. `~/.stricture-config.json` (home directory)
+3. `./.stricture-config.json` (current working directory)
+
+```json
+{
+    "InputFileName": "./Model.mddl",
+    "OutputLocation": "./model/",
+    "OutputFileName": "MeadowModel",
+    "AutomaticallyCompile": false,
+    "AutomaticallyLoad": false
+}
+```
+
+## Interactive TUI
+
+Launch the terminal UI with:
+
+```bash
+stricture tui Model.mddl
+```
+
+The TUI provides:
+
+- **Table sidebar** -- navigate tables with arrow keys
+- **Model overview** -- table counts, column totals and domain breakdown
+- **Table detail** -- inspect columns with types, sizes and join targets
+- **Compile output** -- view compilation logs
+- **Relationship graph** -- ASCII visualization of table relationships
+- **Live DDL preview** -- see generated MySQL for the selected table
+
+Keyboard shortcuts:
+
+| Key | Action |
+|---|---|
+| Up/Down | Navigate table list |
+| Enter | Select table |
+| `o` | Model overview |
+| `c` | Compile model |
+| `g` | Generate all outputs |
+| `r` | Show relationships |
+| `d` | Show MySQL DDL |
+| `q` / Ctrl-C | Quit |
 
 ## Special Columns
 
@@ -206,6 +351,33 @@ Roles and their default security policies:
 
 Built-in authorizers: `Allow`, `Deny`, `Mine`, `MyCustomer`
 
+## Architecture
+
+Stricture 3.0 is built on the Pict/Fable service provider pattern:
+
+```
+Stricture (extends Pict)
+  |
+  +-- Services (registered via addServiceType)
+  |     +-- StrictureCompiler
+  |     +-- StrictureModelLoader
+  |     +-- StrictureGenerate* (10 generators)
+  |
+  +-- CLI (pict-service-commandlineutility)
+  |     +-- 15 Commander.js subcommands
+  |     +-- Cascading .stricture-config.json
+  |
+  +-- TUI (pict-application + pict-terminalui + blessed)
+        +-- 8 Pict views driving blessed widgets
+```
+
+Each service extends `fable-serviceproviderbase` and accesses shared state through `this.fable.AppData`:
+
+- `AppData.Model` -- the compiled table model
+- `AppData.ModelIndices` -- ID column to table name lookup
+- `AppData.ExtendedModel` -- flag for extended vs base model
+- `AppData.Stricture` -- raw compiler output
+
 ## Testing
 
 ```bash
@@ -220,28 +392,14 @@ npm run docker-dev-build
 npm run docker-dev-run
 ```
 
-## Documentation
-
-Detailed command documentation is available in the `docs/` folder:
-
-| Document | Description |
-|----------|-------------|
-| [Stricture-Legacy-Compiler.md](docs/Stricture-Legacy-Compiler.md) | Compiler overview and output structure |
-| [MicroDDL-Syntax.md](docs/MicroDDL-Syntax.md) | Full MicroDDL language reference |
-| [Command-Compile.md](docs/Command-Compile.md) | Compile command |
-| [Command-Full.md](docs/Command-Full.md) | Full pipeline command |
-| [Command-MySQL.md](docs/Command-MySQL.md) | MySQL generator |
-| [Command-Meadow.md](docs/Command-Meadow.md) | Meadow schema generator |
-| [Command-Documentation.md](docs/Command-Documentation.md) | Markdown documentation generator |
-| [Command-Relationships.md](docs/Command-Relationships.md) | Graphviz diagram generator |
-| [Command-Authorization.md](docs/Command-Authorization.md) | Authorization chart generator |
-| [Docuserve-Configuration.md](docs/Docuserve-Configuration.md) | Docuserve file format reference (cover, sidebar, topbar, catalog, search index) |
-
 ## Related Packages
 
-- [meadow](https://github.com/stevenvelozo/meadow) - Data access and ORM
-- [foxhound](https://github.com/stevenvelozo/foxhound) - Query DSL for SQL generation
-- [fable](https://github.com/stevenvelozo/fable) - Application services framework
+- [meadow](https://github.com/stevenvelozo/meadow) -- Data access and ORM
+- [foxhound](https://github.com/stevenvelozo/foxhound) -- Query DSL for SQL generation
+- [fable](https://github.com/stevenvelozo/fable) -- Application services framework
+- [pict](https://github.com/stevenvelozo/pict) -- View and application framework
+- [pict-service-commandlineutility](https://github.com/stevenvelozo/pict-service-commandlineutility) -- CLI framework
+- [pict-terminalui](https://github.com/stevenvelozo/pict-terminalui) -- Terminal UI bridge
 
 ## License
 
