@@ -34,7 +34,7 @@
 		"url": "https://github.com/stevenvelozo/stricture/issues"
 	},
 	"devDependencies": {
-		"quackage": "^1.0.57"
+		"quackage": "^1.0.58"
 	},
 	"dependencies": {
 		"blessed": "^0.1.81",
