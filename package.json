@@ -9,8 +9,8 @@
 	"scripts": {
 		"start": "node bin/stricture",
 		"coverage": "npx quack coverage",
-		"test": "npx mocha -u tdd --exit -R spec",
-		"tests": "npx mocha -u tdd --exit -R spec --grep",
+		"test": "npx quack test",
+		"tests": "npx quack test -g",
 		"build": "npx quack build",
 		"docker-dev-build": "docker build ./ -f Dockerfile_LUXURYCode -t stricture-image:local",
 		"docker-dev-run": "docker run -it -d --name stricture-dev -p 17715:8080 -p 13154:8086 -v \"$PWD/.config:/home/coder/.config\"  -v \"$PWD:/home/coder/stricture\" -u \"$(id -u):$(id -g)\" -e \"DOCKER_USER=$USER\" stricture-image:local",
