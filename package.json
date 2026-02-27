@@ -8,7 +8,7 @@
 	},
 	"scripts": {
 		"start": "node bin/stricture",
-		"coverage": "npx nyc npx mocha -- -u tdd -R spec",
+		"coverage": "npx quack coverage",
 		"test": "npx mocha -u tdd --exit -R spec",
 		"tests": "npx mocha -u tdd --exit -R spec --grep",
 		"build": "npx quack build",
