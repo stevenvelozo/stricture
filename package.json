@@ -14,7 +14,13 @@
 		"build": "npx quack build",
 		"docker-dev-build": "docker build ./ -f Dockerfile_LUXURYCode -t stricture-image:local",
 		"docker-dev-run": "docker run -it -d --name stricture-dev -p 17715:8080 -p 13154:8086 -v \"$PWD/.config:/home/coder/.config\"  -v \"$PWD:/home/coder/stricture\" -u \"$(id -u):$(id -g)\" -e \"DOCKER_USER=$USER\" stricture-image:local",
-		"docker-dev-shell": "docker exec -it stricture-dev /bin/bash"
+		"docker-dev-shell": "docker exec -it stricture-dev /bin/bash",
+		"docker-mysql-start": "bash ./start-mysql.sh",
+		"docker-mysql-stop": "bash ./stop-mysql.sh",
+		"docker-postgresql-start": "bash ./start-postgresql.sh",
+		"docker-postgresql-stop": "bash ./stop-postgresql.sh",
+		"docker-mssql-start": "bash ./start-mssql.sh",
+		"docker-mssql-stop": "bash ./stop-mssql.sh"
 	},
 	"repository": {
 		"type": "git",
