@@ -8,16 +8,15 @@
 */
 
 const libAsync = require('async');
-var libMkdirp = require('mkdirp');
+var libMkdirp = require('mkdirp').mkdirp;
 const { first } = require('underscore');
 
 var createDirectories = function(pFable, fCallback)
 {
-	libMkdirp(pFable.settings.OutputLocation,
-		(pError)=>
-		{
-			return fCallback();
-		});
+	// mkdirp v3 returns a Promise instead of accepting a callback
+	libMkdirp(pFable.settings.OutputLocation)
+		.then(() => fCallback())
+		.catch(() => fCallback());
 };
 
 // Load the JSON data into the pFable object before running a command

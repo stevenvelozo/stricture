@@ -65,7 +65,8 @@ const _StrictureCLI = new libCLIProgram(
 		require('./commands/Stricture-Command-TestFixtures.js'),
 		require('./commands/Stricture-Command-Info.js'),
 		require('./commands/Stricture-Command-TUI.js'),
-		require('./commands/Stricture-Command-CompareDDL.js')
+		require('./commands/Stricture-Command-CompareDDL.js'),
+		require('./commands/Stricture-Command-Legacy.js')
 	]);
 
 // Register all Stricture service types on the CLI program's pict instance

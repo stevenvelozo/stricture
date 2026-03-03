@@ -8,7 +8,7 @@
 * @description Processes the JSON Data Description into documentation and SQL statements
 */
 
-var libMkdirp = require('mkdirp');
+var libMkdirp = require('mkdirp').mkdirp;
 
 var Stricture = function(pSettings)
 {
@@ -26,23 +26,29 @@ var Stricture = function(pSettings)
 	}
 
 	// Check if the output folder exists, create it if it doesn't.
-	libMkdirp(_Fable.settings.OutputLocation,
-		function (pError)
+	// mkdirp v3 returns a Promise; handle both promise and callback styles.
+	let tmpMkdirpResult = libMkdirp(_Fable.settings.OutputLocation);
+
+	let tmpOnComplete = function(pError)
+	{
+		if (pError)
 		{
-			if (pError)
-			{
-				console.log('ERROR: You must provide at least an input filename for the DDL JSON file.');
-				console.log('       For Example: node Stricture.js -i "BestDDLEvar.mddl"');
-				process.exit(1);
-			}
-			else
-			{
-				// Load the JSON, then run the command with the model passed in
-				let tmpRunPrepare = require('./Stricture-Run-Prepare.js');
-				tmpRunPrepare(_Fable, require('./Stricture-Run-ExecuteCommand.js'));
-			}
+			console.log('ERROR: You must provide at least an input filename for the DDL JSON file.');
+			console.log('       For Example: node Stricture.js -i "BestDDLEvar.mddl"');
+			process.exit(1);
 		}
-	);
+		else
+		{
+			// Load the JSON, then run the command with the model passed in
+			let tmpRunPrepare = require('./Stricture-Run-Prepare.js');
+			tmpRunPrepare(_Fable, require('./Stricture-Run-ExecuteCommand.js'));
+		}
+	};
+
+	if (tmpMkdirpResult && typeof tmpMkdirpResult.then === 'function')
+	{
+		tmpMkdirpResult.then(() => tmpOnComplete(null)).catch(tmpOnComplete);
+	}
 };
 
 module.exports = Stricture;

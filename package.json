@@ -39,14 +39,16 @@
 	"dependencies": {
 		"async": "^3.2.6",
 		"blessed": "^0.1.81",
-		"jsonfile": "^6.1.0",
+		"fable": "^3.0.417",
+		"jsonfile": "^6.2.0",
 		"line-by-line": "0.1.4",
 		"mkdirp": "^3.0.1",
 		"pict": "^1.0.355",
 		"pict-application": "^1.0.33",
 		"pict-service-commandlineutility": "^1.0.19",
 		"pict-terminalui": "^0.0.3",
-		"pict-view": "^1.0.67"
+		"pict-view": "^1.0.67",
+		"underscore": "^1.13.7"
 	},
 	"mocha": {
 		"diff": true,
