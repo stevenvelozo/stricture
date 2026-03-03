@@ -64,6 +64,9 @@ class Stricture extends libPict
 		this.addServiceType('StrictureGenerateAuthChart', require('./services/Stricture-Service-GenerateAuthChart.js'));
 		this.addServiceType('StrictureGeneratePict', require('./services/Stricture-Service-GeneratePict.js'));
 		this.addServiceType('StrictureGenerateTestFixtures', require('./services/Stricture-Service-GenerateTestFixtures.js'));
+
+		// Comparison service
+		this.addServiceType('StrictureCompareDDL', require('./services/Stricture-Service-CompareDDL.js'));
 	}
 }
 

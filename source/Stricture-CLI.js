@@ -64,7 +64,8 @@ const _StrictureCLI = new libCLIProgram(
 		require('./commands/Stricture-Command-Pict.js'),
 		require('./commands/Stricture-Command-TestFixtures.js'),
 		require('./commands/Stricture-Command-Info.js'),
-		require('./commands/Stricture-Command-TUI.js')
+		require('./commands/Stricture-Command-TUI.js'),
+		require('./commands/Stricture-Command-CompareDDL.js')
 	]);
 
 // Register all Stricture service types on the CLI program's pict instance
@@ -80,5 +81,6 @@ _StrictureCLI.addServiceType('StrictureGenerateModelGraph', require('./services/
 _StrictureCLI.addServiceType('StrictureGenerateAuthChart', require('./services/Stricture-Service-GenerateAuthChart.js'));
 _StrictureCLI.addServiceType('StrictureGeneratePict', require('./services/Stricture-Service-GeneratePict.js'));
 _StrictureCLI.addServiceType('StrictureGenerateTestFixtures', require('./services/Stricture-Service-GenerateTestFixtures.js'));
+_StrictureCLI.addServiceType('StrictureCompareDDL', require('./services/Stricture-Service-CompareDDL.js'));
 
 module.exports = _StrictureCLI;

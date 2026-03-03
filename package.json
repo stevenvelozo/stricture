@@ -37,7 +37,9 @@
 		"quackage": "^1.0.59"
 	},
 	"dependencies": {
+		"async": "^3.2.6",
 		"blessed": "^0.1.81",
+		"jsonfile": "^6.1.0",
 		"line-by-line": "0.1.4",
 		"mkdirp": "^3.0.1",
 		"pict": "^1.0.355",

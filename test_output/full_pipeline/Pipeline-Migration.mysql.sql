@@ -1,4 +1,4 @@
--- Data Model -- Generated 2026-02-18T18:34:51.270Z
+-- Data Model -- Generated 2026-03-03T00:35:39.516Z
 
 -- This script creates migration stubs for the following tables:
 -- Table ----------------------------------------- Column Count ----------------

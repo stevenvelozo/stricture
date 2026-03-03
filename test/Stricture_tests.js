@@ -128,7 +128,7 @@ suite
 					function ()
 					{
 						var tmpPkg = require('../package.json');
-						Expect(tmpPkg.version).to.equal('3.0.0');
+						Expect(tmpPkg.version).to.equal('3.0.1');
 						Expect(tmpPkg.name).to.equal('stricture');
 					}
 				);

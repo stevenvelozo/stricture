@@ -44,6 +44,7 @@ package-lock.json
 
 # Test Environment
 debug/testenv
+test_output/
 
 # Quackage takes care of these for me!
 .babelrc
