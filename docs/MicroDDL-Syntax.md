@@ -31,6 +31,27 @@ $Email 60
 | `*`    | Text         | TEXT                             | --          | Unbounded text               |
 | `&`    | DateTime     | DATETIME                         | --          | Date/time value              |
 | `^`    | Boolean      | TINYINT NOT NULL DEFAULT '0'     | --          | Boolean flag                 |
+| `{`    | JSON         | TEXT                             | --          | JSON object (see below)      |
+
+### JSON Column Syntax
+
+The `{` symbol defines columns that store structured JSON data as `TEXT` in SQL:
+
+**JSON** -- the SQL column and object property share the same name:
+
+```
+{Metadata
+```
+
+**JSON Proxy** -- the SQL column differs from the object property. The second token is the storage column name:
+
+```
+{Preferences PreferencesJSON
+```
+
+This stores the data in a SQL column called `PreferencesJSON` but exposes it as `Preferences` on the JavaScript object. The storage column is hidden from API consumers.
+
+The proxy form is detected when a second token exists that is not a join arrow (`->`) and is not purely numeric (which would be a size override).
 
 ## Size Overrides
 
@@ -235,6 +256,8 @@ $UserName 128
 $Email 256
 $PasswordHash 128
 ^Active
+{Preferences
+{ProfileData ProfileDataJSON
 &CreateDate
 #CreatingIDUser -> IDUser
 &UpdateDate

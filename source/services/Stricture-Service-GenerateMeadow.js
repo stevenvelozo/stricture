@@ -159,6 +159,17 @@ class StrictureServiceGenerateMeadow extends libFableServiceBase
 						tmpMeadowModel.DefaultObject[tmpColumnName] = false;
 						tmpMeadowModel.JsonSchema.properties[tmpColumnName] = { type: 'boolean', size: tmpColumnSize };
 						break;
+					case 'JSON':
+						tmpSchemaEntry.Type = 'JSON';
+						tmpMeadowModel.DefaultObject[tmpColumnName] = {};
+						tmpMeadowModel.JsonSchema.properties[tmpColumnName] = { type: 'object' };
+						break;
+					case 'JSONProxy':
+						tmpSchemaEntry.Type = 'JSONProxy';
+						tmpSchemaEntry.StorageColumn = tmpTable.Columns[j].StorageColumn;
+						tmpMeadowModel.DefaultObject[tmpColumnName] = {};
+						tmpMeadowModel.JsonSchema.properties[tmpColumnName] = { type: 'object' };
+						break;
 				}
 
 				// Mark magic change-tracking columns

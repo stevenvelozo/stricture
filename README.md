@@ -154,6 +154,14 @@ tmpCompiler.compileFile('./Model.mddl', './model/', 'MeadowModel', (pError) =>
 | `*`    | Text       | `TEXT`                                  | --           |
 | `&`    | DateTime   | `DATETIME`                              | --           |
 | `^`    | Boolean    | `TINYINT NOT NULL DEFAULT '0'`         | --           |
+| `{`    | JSON       | `TEXT`                                  | --           |
+
+The `{` symbol has two forms:
+
+- **`{ColumnName`** -- JSON column where the SQL column and object property share the same name
+- **`{VirtualName StorageName`** -- JSON Proxy where the SQL column (`StorageName`) differs from the object property (`VirtualName`)
+
+See [Advanced Column Types](#advanced-column-types) for details and examples.
 
 ### Example
 
@@ -174,6 +182,8 @@ $Email 256
 #IDUser -> IDUser
 $Name 90
 $Email 60
+{Preferences
+{Tags TagsJSON
 &CreateDate
 #CreatingIDUser -> IDUser
 ```
@@ -234,6 +244,71 @@ City Title:"City of Residence"
 
 [PICT-Delete Address]
 :ConfirmationMessage = Are you sure?
+```
+
+## Advanced Column Types
+
+### JSON Columns
+
+The `{` symbol defines columns that store structured JSON data. In SQL databases, JSON columns are stored as `TEXT` and automatically serialized/deserialized by the Meadow provider layer.
+
+#### JSON (Same-Name Storage)
+
+When the SQL column name and JavaScript property name are the same:
+
+```
+{Metadata
+```
+
+This creates a column called `Metadata` (type `TEXT` in SQL). On write, the object value is `JSON.stringify`'d. On read, the `TEXT` value is `JSON.parse`'d back into an object.
+
+#### JSON Proxy (Different-Name Storage)
+
+When the SQL column name should differ from the JavaScript property name:
+
+```
+{Preferences PreferencesJSON
+```
+
+This creates a SQL column called `PreferencesJSON` (type `TEXT`), but the JavaScript object exposes the data as `Preferences`. The storage column is hidden from API consumers -- they only see the virtual property name.
+
+This is useful when you want a clean API surface (e.g. `record.Preferences`) while keeping a naming convention in your database that makes the storage format explicit (e.g. `PreferencesJSON`).
+
+#### Example
+
+```
+!Product
+@IDProduct
+%GUIDProduct
+$Name 128
+$SKU 32
+{Metadata
+{Dimensions DimensionsJSON
+&CreateDate
+#CreatingIDUser -> IDUser
+&UpdateDate
+#UpdatingIDUser -> IDUser
+^Deleted
+```
+
+This produces a table with:
+- `Metadata TEXT` -- stores JSON, accessed as `record.Metadata` (an object)
+- `DimensionsJSON TEXT` -- stores JSON, accessed as `record.Dimensions` (an object)
+
+#### Generated Output
+
+The Meadow schema generator produces:
+
+```json
+{ "Column": "Metadata", "Type": "JSON" }
+{ "Column": "Dimensions", "Type": "JSONProxy", "StorageColumn": "DimensionsJSON" }
+```
+
+The MySQL DDL generator produces:
+
+```sql
+Metadata TEXT,
+DimensionsJSON TEXT,
 ```
 
 ## CLI Commands

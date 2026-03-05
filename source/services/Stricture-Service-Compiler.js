@@ -610,6 +610,19 @@ class StrictureServiceCompiler extends libFableServiceBase
 							tmpColumn.DataType = 'Boolean';
 							break;
 
+						case '{':
+							// JSON column
+							tmpLineType = 'Column';
+							tmpColumn.DataType = 'JSON';
+							// If a second token exists that is not a join arrow and not purely numeric,
+							// it is a JSONProxy storage column name
+							if ((tmpLineSplit.length > 1) && (tmpLineSplit[1] !== '->') && (tmpLineSplit[1].match(/^[0-9]+$/) === null))
+							{
+								tmpColumn.DataType = 'JSONProxy';
+								tmpColumn.StorageColumn = tmpLineSplit[1];
+							}
+							break;
+
 						case '"':
 							// Column description (attached to previous column by name)
 							tmpLineType = 'ColumnDescription';
