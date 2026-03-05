@@ -134,10 +134,10 @@ class StrictureServiceGenerateMySQL extends libFableServiceBase
 						libFS.appendFileSync(tmpMySQLFile, '        ' + tmpColumn.Column + " TINYINT NOT NULL DEFAULT '0'");
 						break;
 					case 'JSON':
-						libFS.appendFileSync(tmpMySQLFile, '        ' + tmpColumn.Column + ' TEXT');
+						libFS.appendFileSync(tmpMySQLFile, '        ' + tmpColumn.Column + ' LONGTEXT');
 						break;
 					case 'JSONProxy':
-						libFS.appendFileSync(tmpMySQLFile, '        ' + tmpColumn.StorageColumn + ' TEXT');
+						libFS.appendFileSync(tmpMySQLFile, '        ' + tmpColumn.StorageColumn + ' LONGTEXT');
 						break;
 					default:
 						break;

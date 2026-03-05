@@ -31,11 +31,11 @@ $Email 60
 | `*`    | Text         | TEXT                             | --          | Unbounded text               |
 | `&`    | DateTime     | DATETIME                         | --          | Date/time value              |
 | `^`    | Boolean      | TINYINT NOT NULL DEFAULT '0'     | --          | Boolean flag                 |
-| `{`    | JSON         | TEXT                             | --          | JSON object (see below)      |
+| `{`    | JSON         | LONGTEXT                         | --          | JSON object (see below)      |
 
 ### JSON Column Syntax
 
-The `{` symbol defines columns that store structured JSON data as `TEXT` in SQL:
+The `{` symbol defines columns that store structured JSON data. In MySQL the column type is `LONGTEXT` (up to 4GB); other databases use `TEXT` (unlimited in PostgreSQL/SQLite) or `NVARCHAR(MAX)` (MSSQL).
 
 **JSON** -- the SQL column and object property share the same name:
 
