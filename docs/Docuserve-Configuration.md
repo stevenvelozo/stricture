@@ -197,8 +197,8 @@ docsify-inspired markdown convention.
 
 Description paragraph. Displayed as introductory text on the splash page.
 
-- **Feature Name** — Feature description
-- **Another Feature** — Another description
+- **Feature Name** -- Feature description
+- **Another Feature** -- Another description
 
 [Get Started](getting-started.md)
 [View on GitHub](https://github.com/org/repo)
@@ -211,7 +211,7 @@ Description paragraph. Displayed as introductory text on the splash page.
 | `# Heading`                   | `Title`             | First heading found         |
 | `> Blockquote`                | `Tagline`           | First blockquote found      |
 | Plain paragraph text          | `Description`       | Concatenated if multi-line  |
-| `- **Label** — text`          | `Highlights` entry  | Bold label with separator   |
+| `- **Label** -- text`          | `Highlights` entry  | Bold label with separator   |
 | `- Plain bullet text`         | `Highlights` entry  | Label is empty              |
 | `[Link Text](url)` (bare line)| `Actions` button   | Only bare links on their own line |
 

@@ -6,14 +6,14 @@ Stricture is a MicroDDL compiler that turns a simple, line-based schema definiti
 
 ## Features
 
-- **MicroDDL Language** — concise, Markdown-inspired syntax for defining tables, columns, types and relationships
-- **Multi-Target Output** — generate MySQL, Meadow schemas, Markdown docs, LaTeX docs, CSV dictionaries, Graphviz diagrams and test fixtures from a single source
-- **Relationship Diagrams** — automatic Graphviz DOT generation with optional image compilation
-- **Authorization Definitions** — declare per-table, per-role security policies inline with your schema
-- **PICT UI Definitions** — define Create, List, Record, Update and Delete view configurations alongside your data model
-- **Audit Column Detection** — magic column names (CreateDate, UpdateDate, Deleted, etc.) are automatically wired into Meadow's audit tracking
-- **Include Files** — split large schemas across multiple MicroDDL files
-- **Domain Support** — organize tables into logical domains within a single model
+- **MicroDDL Language** -- concise, Markdown-inspired syntax for defining tables, columns, types and relationships
+- **Multi-Target Output** -- generate MySQL, Meadow schemas, Markdown docs, LaTeX docs, CSV dictionaries, Graphviz diagrams and test fixtures from a single source
+- **Relationship Diagrams** -- automatic Graphviz DOT generation with optional image compilation
+- **Authorization Definitions** -- declare per-table, per-role security policies inline with your schema
+- **PICT UI Definitions** -- define Create, List, Record, Update and Delete view configurations alongside your data model
+- **Audit Column Detection** -- magic column names (CreateDate, UpdateDate, Deleted, etc.) are automatically wired into Meadow's audit tracking
+- **Include Files** -- split large schemas across multiple MicroDDL files
+- **Domain Support** -- organize tables into logical domains within a single model
 
 ## Quick Start
 
@@ -48,15 +48,15 @@ MicroDDL Source (.mddl)
         ├── MeadowModel-Extended.json      (full model with auth + PICT)
         └── MeadowModel-PICT.json          (UI definitions)
               │
-              ├── MySQL Generator       → CREATE TABLE scripts
-              ├── Meadow Generator      → per-table schema JSON files
-              ├── Markdown Generator    → data dictionary docs
-              ├── LaTeX Generator       → printable documentation
-              ├── CSV Generator         → spreadsheet-friendly dictionary
-              ├── Graph Generator       → Graphviz relationship diagrams
-              ├── Auth Chart Generator  → role/permission CSV matrix
-              ├── Pict Generator        → RequireJS UI model
-              └── Test Object Generator → fixture JSON files
+              ├── MySQL Generator       -> CREATE TABLE scripts
+              ├── Meadow Generator      -> per-table schema JSON files
+              ├── Markdown Generator    -> data dictionary docs
+              ├── LaTeX Generator       -> printable documentation
+              ├── CSV Generator         -> spreadsheet-friendly dictionary
+              ├── Graph Generator       -> Graphviz relationship diagrams
+              ├── Auth Chart Generator  -> role/permission CSV matrix
+              ├── Pict Generator        -> RequireJS UI model
+              └── Test Object Generator -> fixture JSON files
 ```
 
 The `Full` command chains Compile, MySQL, Meadow, Markdown and Diagrams in a single pass.
@@ -67,15 +67,15 @@ The `Full` command chains Compile, MySQL, Meadow, Markdown and Diagrams in a sin
 
 | Symbol | Type       | MySQL Mapping                          | Default Size |
 |--------|-----------|----------------------------------------|-------------|
-| `@`    | ID         | `INT UNSIGNED NOT NULL AUTO_INCREMENT` | —           |
+| `@`    | ID         | `INT UNSIGNED NOT NULL AUTO_INCREMENT` | --           |
 | `%`    | GUID       | `CHAR(n)`                              | 36          |
-| `~`    | ForeignKey | `INT UNSIGNED NOT NULL DEFAULT '0'`    | —           |
+| `~`    | ForeignKey | `INT UNSIGNED NOT NULL DEFAULT '0'`    | --           |
 | `#`    | Numeric    | `INT NOT NULL DEFAULT '0'`             | int         |
 | `.`    | Decimal    | `DECIMAL(p,s)`                         | 10,3        |
 | `$`    | String     | `CHAR(n) NOT NULL DEFAULT ''`          | 64          |
-| `*`    | Text       | `TEXT`                                  | —           |
-| `&`    | DateTime   | `DATETIME`                              | —           |
-| `^`    | Boolean    | `TINYINT NOT NULL DEFAULT '0'`         | —           |
+| `*`    | Text       | `TEXT`                                  | --           |
+| `&`    | DateTime   | `DATETIME`                              | --           |
+| `^`    | Boolean    | `TINYINT NOT NULL DEFAULT '0'`         | --           |
 
 ### Example
 
