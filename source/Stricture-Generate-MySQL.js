@@ -67,11 +67,15 @@ var libFS = require('fs');
 					tmpPrimaryKey = pFable.Model.Tables[tmpTable].Columns[j].Column;
 					break;
 				case 'GUID':
-					let tmpSize = pFable.Model.Tables[tmpTable].Columns[j].hasOwnProperty('Size') ? pFable.Model.Tables[tmpTable].Columns[j].Size : 36;
+					// Default GUID column width is 255: UUIDs are 36, but
+					// integration adapters often produce composite/prefixed
+					// GUIDs that exceed 36 (e.g. "<prefix>-E-<entity>-<source>"
+					// from meadow-integration). Wider default avoids silent
+					// truncation when the descriptor doesn't pin a Size.
+					let tmpSize = pFable.Model.Tables[tmpTable].Columns[j].hasOwnProperty('Size') ? pFable.Model.Tables[tmpTable].Columns[j].Size : 255;
 					if (isNaN(tmpSize))
 					{
-						// Use the old default if Size is improper
-						tmpSize = 36;
+						tmpSize = 255;
 					}
 					libFS.appendFileSync(tmpMySQLFile, "        "+pFable.Model.Tables[tmpTable].Columns[j].Column+" CHAR("+tmpSize+") NOT NULL DEFAULT '0xDe'");
 					break;

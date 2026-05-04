@@ -104,10 +104,14 @@ class StrictureServiceGenerateMySQL extends libFableServiceBase
 						tmpPrimaryKey = tmpColumn.Column;
 						break;
 					case 'GUID':
-						let tmpSize = tmpColumn.hasOwnProperty('Size') ? tmpColumn.Size : 36;
+						// Default GUID column width is 255 — see notes in
+						// Stricture-Generate-MySQL.js. UUIDs are 36 but
+						// composite GUIDs from integration adapters often
+						// exceed that.
+						let tmpSize = tmpColumn.hasOwnProperty('Size') ? tmpColumn.Size : 255;
 						if (isNaN(tmpSize))
 						{
-							tmpSize = 36;
+							tmpSize = 255;
 						}
 						libFS.appendFileSync(tmpMySQLFile, '        ' + tmpColumn.Column + ' CHAR(' + tmpSize + ") NOT NULL DEFAULT '0xDe'");
 						break;
